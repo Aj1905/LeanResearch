@@ -18,15 +18,19 @@ if [ ! -f "$TEX_FILE" ]; then
     exit 1
 fi
 
-# uplatexを使用（graduation_paper.texはuplatex指定）
-echo "コンパイラ: uplatex"
+# lualatexを使用（graduation_paper.texはlualatex指定）
+echo "コンパイラ: lualatex"
 echo "コンパイル中: $TEX_FILE"
 echo "中間ファイルは $BUILD_DIR/ に出力されます"
 
-# uplatexで2回コンパイル + dvipdfmx
-uplatex -interaction=nonstopmode -output-directory="$BUILD_DIR" "$TEX_FILE" || exit 1
-uplatex -interaction=nonstopmode -output-directory="$BUILD_DIR" "$TEX_FILE" || exit 1
-dvipdfmx -o "$PDF_FILE" "$BUILD_DIR/${BASE_NAME}.dvi" || exit 1
+# lualatexで2回コンパイル
+lualatex -interaction=nonstopmode -output-directory="$BUILD_DIR" "$TEX_FILE" || exit 1
+lualatex -interaction=nonstopmode -output-directory="$BUILD_DIR" "$TEX_FILE" || exit 1
+
+# PDFファイルを元のディレクトリにコピー
+if [ -f "$BUILD_DIR/$PDF_FILE" ]; then
+    cp "$BUILD_DIR/$PDF_FILE" "$PDF_FILE"
+fi
 
 # PDFファイルの存在確認
 if [ -f "$PDF_FILE" ]; then

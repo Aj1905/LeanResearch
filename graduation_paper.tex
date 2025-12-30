@@ -1,15 +1,46 @@
-% !TEX program = uplatex
-% （環境に合わせて platex/uplatex/lualatex 等に変更してください）
-\documentclass[a4paper,12pt]{jsbook}
+% !TEX program = lualatex
+\documentclass[a4paper,12pt]{bxjsbook}
 
-% --- packages ---
+% --- Japanese (LuaLaTeX) ---
+\usepackage{luatexja}
+
+% --- math / layout ---
 \usepackage{amsmath,amssymb,amsthm}
 \usepackage{mathtools}
 \usepackage{geometry}
+\geometry{margin=25mm}
+
+% --- figures / misc ---
+\usepackage{graphicx}
+\usepackage{enumitem}
+
+% --- code (Lean) ---
+\usepackage{listings}
+\usepackage{xcolor}
+\lstdefinelanguage{Lean}{
+  morekeywords={
+    theorem,lemma,def,example,import,namespace,section,end,by,fun,match,with,
+    simp,calc,have,show,exact,apply,refine,intro,case,let,where,structure,
+    variable,variables,open,attribute,macro_rules,inductive,axiom,universe,
+    notation,scoped
+  },
+  sensitive=true,
+  morecomment=[l]{--},
+  morecomment=[s]{/-}{-/},
+  morestring=[b]"
+}
+\lstset{
+  language=Lean,
+  basicstyle=\ttfamily\small,
+  columns=fullflexible,
+  frame=single,
+  breaklines=true,
+  showstringspaces=false
+}
+
+% --- hyperref: LuaLaTeX では driver 指定しない ---
 \usepackage{hyperref}
 \usepackage{bookmark}
-
-\geometry{margin=25mm}
 \hypersetup{
   colorlinks=true,
   linkcolor=blue,
@@ -17,7 +48,7 @@
   citecolor=blue
 }
 
-% --- theorem environments (必要に応じて増やす) ---
+% --- theorem environments ---
 \newtheorem{theorem}{定理}[chapter]
 \newtheorem{lemma}[theorem]{補題}
 \newtheorem{proposition}[theorem]{命題}
@@ -27,10 +58,14 @@
 \theoremstyle{remark}
 \newtheorem{remark}[theorem]{注意}
 
+% --- convenience commands ---
+\newcommand{\Lean}{\textsf{Lean4}}
+\newcommand{\mathlib}{\textsf{mathlib}}
+
 % --- metadata ---
-\title{チェバの定理の高次元一般化と Lean/mathlib への形式化}
-\author{（氏名）}
-\date{（提出年月）}
+\title{チェバの定理の高次元一般化と \Lean/\mathlib への形式化}
+\author{秋田 隼}
+\date{2026/1/9}
 
 \begin{document}
 \maketitle
@@ -38,168 +73,218 @@
 \frontmatter
 \chapter*{要旨}
 \addcontentsline{toc}{chapter}{要旨}
-% ここに要旨（目的・主結果・実装成果）を記述
+本研究は、2次元の古典的チェバの定理を出発点として、$n$次元アフィン空間における適切な一般化（およびその逆）を定式化し、
+\Lean/\mathlib 上での形式化を目標とする。
+主な貢献は以下である。
+\begin{itemize}[leftmargin=2em]
+  \item （数学）$n$次元アフィン空間でのチェバ型定理（単体版）とその逆の明確なステートメント。
+  \item （形式化）既存の \mathlib の構造を調査し、再利用可能部分と不足部分を切り分ける設計指針。
+  \item （実装）不足する補題・定義をモジュール化して追加し、主定理の機械検証を通す。
+\end{itemize}
 
 \tableofcontents
 
 \mainmatter
 
-% =========================
+% =========================================================
 \chapter{序論}
 \section{研究背景と動機}
-% （すでに一部 tex 中に書いてある背景をここに統合）
+近年の生成AIは、言語モデルに推論能力を付与する工夫や、計算ツール・検証器との連携によって急速に性能を向上させている。
+特に2025年には、複数のAIモデルが国際数学オリンピック（IMO）の問題セットに対して
+金メダル基準（gold-medal standard）に相当する得点を達成したと報告された\cite{DeepMindIMO2025,ReutersIMO2025,NatureIMO2025,OpenAIIMO2025X}。
+一方で、自然言語のみで推論するLLMは、もっともらしいが誤りを含む（ハルシネーション）出力を生成しうる。
+
+定理証明器（例：\Lean）を統合した枠組みでは、自然言語の解法案を全部または部分的に形式化して検証し、
+失敗時はフィードバックによる修正ループを回せる。
+そのため、形式検証が及ぶ範囲についてはハルシネーションを大幅に抑制できる。
+ただし、問題文の形式化や自然言語への説明生成には依然として誤りが入りうるため、
+形式化対象となる数学ライブラリの充実が重要となる。
 
 \section{本研究の目的}
-% 例：チェバの定理の一般化を選定し、数学的証明と Lean 形式化を与え、
-% mathlib への追加（もしくは追加可能性）を議論する
+本研究の目的は、チェバの定理の高次元一般化（およびその逆）を \Lean/\mathlib に追加可能な形で整備し、
+AIによる形式化・自動証明支援の基盤を拡充することである。
 
 \section{本研究の貢献}
-% 数学面／ライブラリ設計面／形式化面
+\begin{itemize}[leftmargin=2em]
+  \item 高次元一般化の候補を「数学的自然さ」「形式化コスト」「再利用性」の観点で比較し、\mathlib に適した版を選定する。
+  \item 選定した版について、自然言語証明を整理し、\Lean への翻訳方針（依存関係・不足補題）を明確化する。
+  \item 不足する補助ライブラリをモジュールとして実装し、主定理とその逆を機械検証する。
+\end{itemize}
 
 \section{本論文の構成}
-% 各章の概要
+第2章で2次元チェバとアフィン性を整理し、第3章で一般化の設計空間を述べる。
+第4章で \mathlib へ導入する一般化を選定し、第5章で数学的証明を与える。
+第6章以降で形式化の詳細、再利用可能性、追加ライブラリ設計、応用例を述べる。
 
-% =========================
+% =========================================================
 \chapter{チェバの定理（2次元）とアフィン性}
 \section{古典的チェバの定理の定式化}
-% 定理のステートメント（どの表現を採用するか明確化：有向比、比、重心座標など）
+% TODO: 2次元チェバの命題（比の積=1 等）を書き、必要なら有向距離・比の定義も置く。
 
 \section{チェバの定理がアフィンな結果であること}
-% 内積・距離に依存しないこと、アフィン変換で不変な構造に基づくことなど
+% TODO: 「アフィン変換で不変な量のみで記述できる／アフィン同値で保存される」という意味を説明。
+% 必要なら、重心座標・比の不変性を用いた短い証明を与える。
 
 \section{形式化で必要となる構造の整理}
-% Lean で扱う型・構造（AffineSpace, Line, Collinear, ratio 等）を棚卸し
+% TODO: AffineSpace / AffineMap / barycentric coords / simplex など、Lean側の型・構造へ接続する。
 
-% =========================
+% =========================================================
 \chapter{高次元への一般化の候補}
 \section{一般化の設計空間}
-% 「何を固定し、何を一般化するか」の設計観点を列挙
+% TODO: 何を「チェバ的」と呼ぶか（共点条件、比、重心座標、行列式、射影的定式化 等）を整理。
 
 \section{候補A：平面の三角形を保ち周囲空間のみ高次元化}
-% 埋め込み一般化：2次元の命題を n 次元アフィン空間内の 2-平面に還元
+% TODO: 2Dの配置を AffineSubspace として埋め込み、周囲が高次元でも成立する、という弱い一般化。
 
-\section{候補B：単体（simplex）版のチェバ}
-% n-単体での cevian/concurrency 条件（行列式・バリセントリック等）
+\section{候補B：単体（simplex）版のチェバ（本命候補）}
+% TODO: n-simplex の各頂点から対向面への点（or 超平面）を使うチェバ型命題を述べる。
 
 \section{候補C：射影幾何・行列式・重心座標など別定式化}
-% 実装上の都合も含めて整理
+% TODO: 等価な定式化のうち、mathlibの既存資産と親和性が高いものを評価する。
 
 \section{比較（数学的自然さ／形式化コスト／再利用性）}
-% 表を入れると強い
+% TODO: 表で整理すると読みやすい。
 
-% =========================
-\chapter{mathlib に加える一般化の選定}
+% =========================================================
+\chapter{\mathlib に加える一般化の選定}
 \section{評価軸}
-% 依存最小化、既存 API との整合、拡張性、証明の見通し、将来の定理への波及
+\begin{itemize}[leftmargin=2em]
+  \item 数学的自然さ（既存文献での標準性、拡張可能性）
+  \item 形式化コスト（既存定義・補題の有無、線形代数への還元）
+  \item 再利用性（メネラウス等への接続、他定理への波及）
+\end{itemize}
 
 \section{候補の比較}
-% 表・箇条書きでよい
+% TODO: 候補A/B/C を上の軸で評価し、B を採用する理由を明確化。
 
 \section{採用する一般化と最終ステートメント}
-% 数学的な定理文＋Lean 的な型・仮定を言語化
+% TODO: ここに本研究で採用する「n次元アフィン空間内の単体版チェバ（＋逆）」を宣言。
 
-% =========================
-\chapter{採用した一般化チェバの定理の数学的証明}
+% =========================================================
+\chapter{採用した一般化チェバの定理（単体版）とその逆：数学的証明}
 \section{設定と定義}
-% 点・直線・比（ratio）・cevian の定義・共点性 predicate 等
+% TODO: AffineSpace 上の n-simplex, 各面、比（重心座標 / barycentric）などの定義。
 
 \section{補題群}
-% 比の性質、アフィン結合、重心座標、非退化条件の扱いなど
+% TODO: 重心座標の基本補題、面の方程式、比の積と行列式の関係、など。
 
 \section{主定理と証明}
-\begin{theorem}[（主定理名）]
-% ここに主定理のステートメント
+\begin{theorem}[単体版チェバの定理（案）]
+% TODO: ここに主定理ステートメント（共点条件 <-> ある積=1 / ある行列式条件）を書く。
 \end{theorem}
 \begin{proof}
-% ここに証明
+% TODO: 証明（できるだけ線形代数に落として見通しよく）
+\end{proof}
+
+\section{逆（converse）の定理と証明}
+\begin{theorem}[単体版チェバの逆（案）]
+% TODO: ここに逆定理ステートメントを書く。
+\end{theorem}
+\begin{proof}
+% TODO: 逆方向の証明。
 \end{proof}
 
 \section{一般化になっている点の明確化}
-% 2次元との対応、仮定の強弱、構造の最小性など
+% TODO: 2次元チェバが特別の場合として回収されること、射影/行列式定式化との関係も言及。
 
-% =========================
-\chapter{Lean による形式化}
-\section{Lean と mathlib の関連基盤}
-% import、使用する主要構造（AffineSpace 等）、既存定理との接続
+% =========================================================
+\chapter{\Lean による形式化}
+\section{\Lean と \mathlib の関連基盤}
+% TODO: import方針、AffineSpace, Finset, Matrix, LinearAlgebra などの依存を整理。
 
-\section{定義の Lean 化}
-% 数学の定義 → Lean の定義（型・命名・引数設計）
+\section{定義の \Lean 化}
+% TODO: simplex, face, barycentric などの定義をどう置くか。
 
-\section{証明の Lean 化}
-% 数学の補題列 → Lean の lemma 群
-% tactic / term-style / simp 方針など
+\section{証明の \Lean 化}
+% TODO: 補題→主定理→逆 の順に、どこが自動化できてどこが手作業か。
 
 \section{実装上の典型的障害と対処}
-% coercions, simp 正規形、非退化条件、局所座標化、等
+% TODO: coercions, simp, rewriting, finiteness, nondegeneracy条件など。
 
-% =========================
+% =========================================================
 \chapter{既存モジュールの転用可能性}
 \section{転用できる部分}
-% 既存 API の再利用箇所を列挙
+% TODO: 既存の Affine, LinearAlgebra, simplex 関連を列挙。
 
 \section{転用できない（不足している）部分}
-% 欠けている定義・補題・抽象化
+% TODO: 不足補題、定義、補助APIを列挙。
 
 \section{依存関係と設計上の制約}
-% import の増減、循環依存回避、将来拡張
+% TODO: 循環依存回避、ファイル分割方針。
 
-% =========================
+% =========================================================
 \chapter{追加すべきライブラリと実装上の工夫}
 \section{追加ライブラリ一覧（ファイル／モジュール単位）}
-% 例：Geometry/Affine/Ceva.lean 等（仮）
+% TODO: 例: Geometry/Affine/SimplexCeva.lean など
 
 \section{各モジュールの設計方針}
-% API、命名、simp lemma、非退化条件の表現
+% TODO: SOLID的に「定義」「補題」「主定理」を分割する方針を明記。
 
 \section{実装の工夫事項・特記事項}
-% PR を通す観点（一般性・粒度・再利用性・ドキュメント）
+% TODO: simp lemma 管理、型クラス、ローカル記法、テスト方針。
 
 \section{使用例・テスト}
-% 簡単な例題や rewrite 例
+% TODO: 小さな次元（2,3）での回収テスト、API例。
 
-% =========================
+% =========================================================
 \chapter{本ライブラリで示せる別定理と発展例}
 \section{近縁定理への接続}
-% Menelaus、Desargues、Pascal など（扱える範囲で）
+% TODO: メネラウスの定理、射影幾何的双対など。
 
 \section{定理群のテンプレ化}
-% 共点・共線の抽象化、座標化、barycentric 連携
+% TODO: 「単体＋重心座標」テンプレを用いた定理追加の方針。
 
 \section{高次元へのロードマップ}
-% simplex 版への拡張など
+% TODO: 今後の拡張（他の幾何定理、線形代数API拡充）。
 
-% =========================
+% =========================================================
 \chapter{結論と今後の展望}
 \section{結論}
-% 成果の要約（数学／形式化／mathlib 追加）
+% TODO: 何を示し、何を形式化し、何が \mathlib に入るのかを簡潔に。
 
 \section{今後の課題}
-% 自動化、API 洗練、他定理拡張、教育教材整備など
+% TODO: 自動化、証明探索、教材整備など。
 
-\section{Lean 普及と形式化研究の展望}
-% あなたの長期ビジョン（自動証明支援）もここで回収
+\section{\Lean 普及と形式化研究の展望}
+% TODO: AI×形式化の話に接続（ただし断定しすぎず、範囲を明確に）。
 
-% =========================
+% =========================================================
 \appendix
-\chapter{付録：主要 Lean コード抜粋}
-% 定義・主定理・重要補題を最小限に抜粋
+\chapter{付録：主要 \Lean コード抜粋}
+% 例（実際のコードに差し替え）
+\begin{lstlisting}
+-- import ...（後で差し替え）
+-- theorem ... := by
+--   ...
+\end{lstlisting}
 
-\chapter{付録：概念対応表（数学用語 ↔ Lean の型／定義）}
-% 辞書的な表
+\chapter{付録：概念対応表（数学用語 ↔ \Lean の型／定義）}
+% TODO
 
 \chapter{付録：実装ログ（ハマりどころ集）}
-% simp、型クラス、分母0回避、等
+% TODO
 
 \backmatter
 \chapter*{謝辞}
 \addcontentsline{toc}{chapter}{謝辞}
-% 必要なら
+% TODO
 
 \chapter*{参考文献}
 \addcontentsline{toc}{chapter}{参考文献}
-% thebibliography でも BibTeX/Biber でも可
-% \begin{thebibliography}{99}
-% \bibitem{...} ...
-% \end{thebibliography}
+\begin{thebibliography}{99}
+
+\bibitem{DeepMindIMO2025}
+Google DeepMind, \emph{Advanced version of Gemini with Deep Think officially achieves gold-medal standard at the International Mathematical Olympiad}, 2025.
+
+\bibitem{OpenAIIMO2025X}
+OpenAI, \emph{We achieved gold medal-level performance on the 2025 IMO}, 2025.
+
+\bibitem{ReutersIMO2025}
+Reuters, \emph{Google and OpenAI's AI models win milestone gold at global math competition}, 2025.
+
+\bibitem{NatureIMO2025}
+D. Castelvecchi, \emph{DeepMind and OpenAI models solve maths problems at level of top students}, Nature, 2025.
+
+\end{thebibliography}
 
 \end{document}

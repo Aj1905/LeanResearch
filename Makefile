@@ -5,25 +5,28 @@ BUILD_DIR = build
 TEX_FILE = graduation_paper.tex
 PDF_FILE = graduation_paper.pdf
 
-.PHONY: pdf clean help $(BUILD_DIR)
+.PHONY: all pdf clean help $(BUILD_DIR)
 
 # buildディレクトリを作成
 $(BUILD_DIR):
 	@mkdir -p $(BUILD_DIR)
 
 # デフォルトターゲット
+all: $(PDF_FILE)
+	@echo "✓ 完了"
+
 pdf: $(PDF_FILE)
 	@echo "✓ 完了"
 
-# graduation_paper.texからPDFを生成
+# graduation_paper.texからPDFを生成（LuaLaTeX使用）
 $(PDF_FILE): $(TEX_FILE) | $(BUILD_DIR)
 	@echo "コンパイル中: $(TEX_FILE)"
-	@echo "使用コンパイラ: uplatex"
+	@echo "使用コンパイラ: lualatex"
 	@echo "中間ファイルは $(BUILD_DIR)/ に出力されます"
-	uplatex -interaction=nonstopmode -output-directory=$(BUILD_DIR) $(TEX_FILE)
-	uplatex -interaction=nonstopmode -output-directory=$(BUILD_DIR) $(TEX_FILE)
-	dvipdfmx -o $(PDF_FILE) $(BUILD_DIR)/graduation_paper.dvi
-	@if [ -f "$(PDF_FILE)" ]; then \
+	lualatex -interaction=nonstopmode -output-directory=$(BUILD_DIR) $(TEX_FILE)
+	lualatex -interaction=nonstopmode -output-directory=$(BUILD_DIR) $(TEX_FILE)
+	@if [ -f "$(BUILD_DIR)/$(PDF_FILE)" ]; then \
+		cp $(BUILD_DIR)/$(PDF_FILE) $(PDF_FILE); \
 		echo "✓ PDF生成成功: $(PDF_FILE)"; \
 		open "$(PDF_FILE)"; \
 	else \
