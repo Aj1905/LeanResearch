@@ -1,269 +1,205 @@
-\documentclass[a4paper,UKenglish,cleveref, autoref, thm-restate]{lipics-v2021}
+% !TEX program = uplatex
+% （環境に合わせて platex/uplatex/lualatex 等に変更してください）
+\documentclass[a4paper,12pt]{jsbook}
 
-\bibliographystyle{plainurl}% the mandatory bibstyle
+% --- packages ---
+\usepackage{amsmath,amssymb,amsthm}
+\usepackage{mathtools}
+\usepackage{geometry}
+\usepackage{hyperref}
+\usepackage{bookmark}
 
-\title{Formalization of Ceva} 
+\geometry{margin=25mm}
+\hypersetup{
+  colorlinks=true,
+  linkcolor=blue,
+  urlcolor=blue,
+  citecolor=blue
+}
 
-\titlerunning{the 61st in Missing theorems from Freek Wiedijk's list of 100 theorems}
+% --- theorem environments (必要に応じて増やす) ---
+\newtheorem{theorem}{定理}[chapter]
+\newtheorem{lemma}[theorem]{補題}
+\newtheorem{proposition}[theorem]{命題}
+\newtheorem{corollary}[theorem]{系}
+\theoremstyle{definition}
+\newtheorem{definition}[theorem]{定義}
+\theoremstyle{remark}
+\newtheorem{remark}[theorem]{注意}
 
-\author{Jun Akita}{Waseda University, School of Fundamental Science and Engineering, Japan \and HP: \url{https://c46b3c12.myhomepage-1xu.pages.dev/} \and GitHub: \url{https://github.com/Aj1905}}{jun.akita.1905@akane.waseda.jp}{https://orcid.org/0009-0005-1156-0059}{}
-
-\authorrunning{J. Akita}
-\Copyright{Jun Akita} 
-
-\ccsdesc[100]{\textcolor{red}{Replace ccsdesc macro with valid one}} %TODO: choose ACM 2012 classifications
-
-\keywords{interactive theorem proving, Lean4, Ceva's theorem, Euclidean geometry, formalization} 
-
-\category{} %optional, e.g. invited paper
-
-\relatedversion{} %optional
-
-\acknowledgements{I want to thank \dots}%optional
-
-%Editor-only macros:: begin %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-\EventEditors{John Q. Open and Joan R. Access}
-\EventNoEds{2}
-\EventLongTitle{42nd Conference on Very Important Topics (CVIT 2016)}
-\EventShortTitle{CVIT 2016}
-\EventAcronym{CVIT}
-\EventYear{2016}
-\EventDate{December 24--27, 2016}
-\EventLocation{Little Whinging, United Kingdom}
-\EventLogo{}
-\SeriesVolume{42}
-\ArticleNo{23}
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% --- metadata ---
+\title{チェバの定理の高次元一般化と Lean/mathlib への形式化}
+\author{（氏名）}
+\date{（提出年月）}
 
 \begin{document}
-
 \maketitle
 
-\begin{abstract}
-In this paper, we present a formalization of Ceva's theorem (and its converse) in the Lean 4 theorem prover. 
-Working in the general setting of affine spaces over an arbitrary field, we state and prove 
-Ceva's theorem for triangles embedded in an $n$-dimensional ambient space, without appealing to 
-coordinates or metric notions such as distances or angles.
+\frontmatter
+\chapter*{要旨}
+\addcontentsline{toc}{chapter}{要旨}
+% ここに要旨（目的・主結果・実装成果）を記述
 
-Our development introduces reusable infrastructure for affine geometry in \texttt{mathlib}, including 
-definitions and lemmas about cevians, affine ratios, and concurrency of lines. Along the way, 
-we refactor and extend existing material on barycentric coordinates so that classical synthetic 
-arguments can be expressed in an implementation-friendly form.
+\tableofcontents
 
-We compare several standard textbook proofs (via area ratios, vector methods, and barycentric 
-coordinates) and explain how their key ideas are reflected in the final Lean proof. This case 
-study illustrates how a classical theorem of elementary geometry can be stated in appropriately 
-general form, integrated into a large mathematical library, and used as a stepping stone toward 
-further formalization of plane and affine geometry in interactive theorem provers.
-\end{abstract}
+\mainmatter
 
+% =========================
+\chapter{序論}
+\section{研究背景と動機}
+% （すでに一部 tex 中に書いてある背景をここに統合）
 
+\section{本研究の目的}
+% 例：チェバの定理の一般化を選定し、数学的証明と Lean 形式化を与え、
+% mathlib への追加（もしくは追加可能性）を議論する
 
-\section{Introduction}
+\section{本研究の貢献}
+% 数学面／ライブラリ設計面／形式化面
 
-Ceva's theorem is one of the central results of classical Euclidean triangle geometry.  
-Given a triangle $ABC$ and points $D$, $E$, and $F$ on the sides $BC$, $CA$, and $AB$ respectively, the theorem states that the cevians $AD$, $BE$, and $CF$ are concurrent if and only if
-\[
-  \frac{BD}{DC} \cdot \frac{CE}{EA} \cdot \frac{AF}{FB} = 1,
-\]
-where the ratios are interpreted as signed segment ratios in the oriented setting.  
-This simple multiplicative condition captures a wide range of concurrency phenomena in triangle geometry and is closely related to other fundamental results such as Menelaus' theorem. Ceva's theorem appears routinely in geometry textbooks and mathematical olympiad problems, and it serves as a gateway to more sophisticated tools such as barycentric coordinates, projective arguments, and trigonometric forms of geometric theorems.
+\section{本論文の構成}
+% 各章の概要
 
-From the perspective of interactive theorem proving, Ceva's theorem is an attractive case study.  
-On the one hand, its statement is elementary and well known, so it provides a concrete target against which one can validate the expressiveness and usability of a geometry library.  
-On the other hand, its proofs come in many different flavors: purely synthetic Euclidean proofs, coordinate-based proofs, barycentric proofs, and trigonometric proofs. Formalizing Ceva's theorem in an interactive theorem prover therefore tests not only the underlying geometric infrastructure, but also the system's ability to support and compare different proof styles within a single coherent framework.
+% =========================
+\chapter{チェバの定理（2次元）とアフィン性}
+\section{古典的チェバの定理の定式化}
+% 定理のステートメント（どの表現を採用するか明確化：有向比、比、重心座標など）
 
-In this paper we formalize Ceva's theorem in Lean~4, building on the mathematical library \texttt{mathlib} and its affine and Euclidean geometry components.  
-Our formalization is not merely a direct encoding of a single textbook proof. Instead, we use Ceva's theorem as a benchmark to design and organize reusable geometry infrastructure that can support a variety of concurrent and collinear configurations in the Euclidean plane and beyond.
+\section{チェバの定理がアフィンな結果であること}
+% 内積・距離に依存しないこと、アフィン変換で不変な構造に基づくことなど
 
-\paragraph*{Contributions.}
-The main contributions of this work are as follows.
-\begin{itemize}
-  \item We give a flexible formal statement of Ceva's theorem in Lean~4, phrased in terms of abstract real affine (or inner product) spaces rather than a fixed coordinate model of the Euclidean plane.  
-        This formulation cleanly separates the geometric content of the theorem from any particular representation of points and lines.
-  \item We develop reusable infrastructure for triangle geometry in \texttt{mathlib}: definitions of cevians and concurrency, oriented segment ratios compatible with the existing affine/Euclidean APIs, and auxiliary lemmas about collinearity, parallelism, and ratio manipulations that are useful beyond Ceva's theorem itself.
-  \item We formalize and compare multiple proof styles for Ceva's theorem.  
-        In particular, we implement a synthetic proof that closely follows classical Euclidean arguments, and a more algebraic proof that proceeds via coordinates (or barycentric-like representations).  
-        We discuss how these styles differ in terms of readability, automation, and reusability, and what this reveals about proof engineering for geometry in Lean.
-  \item We position our development within the broader landscape of formal Euclidean geometry, and we identify parts of our infrastructure that can serve as building blocks for future formalizations, such as Menelaus' theorem, various triangle center constructions, and more advanced projective arguments.
-\end{itemize}
+\section{形式化で必要となる構造の整理}
+% Lean で扱う型・構造（AffineSpace, Line, Collinear, ratio 等）を棚卸し
 
-\paragraph*{Outline.}
-The rest of the paper is organized as follows.  
-In Section~\ref{sec:background} we recall Ceva's theorem in its classical forms and summarize the relevant parts of Lean~4 and \texttt{mathlib}'s geometry library.  
-Section~\ref{sec:infrastructure} introduces our formal setting for Euclidean geometry, together with the key definitions and helper lemmas for cevians, oriented segment ratios, and concurrency.  
-In Section~\ref{sec:synthetic-proof} we present our synthetic Lean proof of Ceva's theorem, mirroring a standard Euclidean argument.  
-Section~\ref{sec:coordinate-proof} describes an alternative, more algebraic proof and explains how it is connected to coordinate and barycentric approaches.  
-Section~\ref{sec:discussion} compares the different proof styles from a proof-engineering standpoint and discusses their implications for the design of geometry libraries in interactive theorem provers.  
-Finally, Section~\ref{sec:conclusion} concludes and outlines directions for extending our infrastructure to a broader class of geometric theorems.
+% =========================
+\chapter{高次元への一般化の候補}
+\section{一般化の設計空間}
+% 「何を固定し、何を一般化するか」の設計観点を列挙
 
-% TODO: motivate Ceva's theorem and its formalization in Lean4.
-% - Classical importance of Ceva in Euclidean geometry.
-% - Why formalizing it in an interactive theorem prover is interesting.
-% - Contributions (formal statement, reusable geometry infrastructure, comparison of proof styles, etc.).
-% - Outline of the paper.
+\section{候補A：平面の三角形を保ち周囲空間のみ高次元化}
+% 埋め込み一般化：2次元の命題を n 次元アフィン空間内の 2-平面に還元
 
+\section{候補B：単体（simplex）版のチェバ}
+% n-単体での cevian/concurrency 条件（行列式・バリセントリック等）
 
+\section{候補C：射影幾何・行列式・重心座標など別定式化}
+% 実装上の都合も含めて整理
 
-\section{Background}\label{sec:background}
+\section{比較（数学的自然さ／形式化コスト／再利用性）}
+% 表を入れると強い
 
-\subsection{Classical Ceva's Theorem}\label{subsec:classical-ceva}
+% =========================
+\chapter{mathlib に加える一般化の選定}
+\section{評価軸}
+% 依存最小化、既存 API との整合、拡張性、証明の見通し、将来の定理への波及
 
-Ceva's theorem is a concurrency criterion for cevians in a triangle.  
-Let $ABC$ be a triangle in the Euclidean plane and let $D$, $E$, and $F$ be points on the sides $BC$, $CA$, and $AB$ respectively, with the understanding that each point may lie on the line determined by the corresponding side (so that external cevians are allowed). The cevians are the lines $AD$, $BE$, and $CF$.
+\section{候補の比較}
+% 表・箇条書きでよい
 
-In its most familiar (unsigned) form, Ceva's theorem states that the cevians $AD$, $BE$, and $CF$ are concurrent if and only if
-\[
-  \frac{BD}{DC} \cdot \frac{CE}{EA} \cdot \frac{AF}{FB} = 1,
-\]
-where the ratios are taken as positive real numbers and one typically assumes that $D$, $E$, and $F$ lie on the segments $BC$, $CA$, and $AB$ respectively. In this formulation, the theorem is restricted to internal cevians.
+\section{採用する一般化と最終ステートメント}
+% 数学的な定理文＋Lean 的な型・仮定を言語化
 
-A more flexible formulation uses \emph{oriented lengths} (or signed ratios).  
-Each side of the triangle is given an orientation (for instance, $B \to C$, $C \to A$, $A \to B$), and the oriented length $\overrightarrow{XY}$ of a segment from $X$ to $Y$ is taken to be positive if $Y$ lies in the positive direction from $X$ and negative otherwise. The ratios
-\[
-  \frac{\overrightarrow{BD}}{\overrightarrow{DC}}, \quad
-  \frac{\overrightarrow{CE}}{\overrightarrow{EA}}, \quad
-  \frac{\overrightarrow{AF}}{\overrightarrow{FB}}
-\]
-are then real numbers, possibly negative.  
-In this oriented setting, Ceva's theorem asserts that $AD$, $BE$, and $CF$ are concurrent if and only if
-\[
-  \frac{\overrightarrow{BD}}{\overrightarrow{DC}} \cdot
-  \frac{\overrightarrow{CE}}{\overrightarrow{EA}} \cdot
-  \frac{\overrightarrow{AF}}{\overrightarrow{FB}} = 1.
-\]
-This version simultaneously covers internal and external configurations and is more natural from an affine or projective viewpoint.
+% =========================
+\chapter{採用した一般化チェバの定理の数学的証明}
+\section{設定と定義}
+% 点・直線・比（ratio）・cevian の定義・共点性 predicate 等
 
-For the purposes of formalization, it is convenient to phrase the theorem in an abstract affine setting rather than in a concrete coordinate model of the Euclidean plane.  
-We therefore fix a real affine space $P$ modeled on a real inner product space $V$, which plays the role of Euclidean space in \texttt{mathlib}.  
-Given distinct, non-collinear points $A, B, C : P$ and points $D, E, F : P$ lying on the lines $BC$, $CA$, and $AB$ respectively, we define the oriented ratios $\frac{BD}{DC}$, $\frac{CE}{EA}$, and $\frac{AF}{FB}$ using the underlying vector space structure and a consistent choice of orientation on each side.  
+\section{補題群}
+% 比の性質、アフィン結合、重心座標、非退化条件の扱いなど
 
-The precise statement that we formalize can be summarized as follows:
+\section{主定理と証明}
+\begin{theorem}[（主定理名）]
+% ここに主定理のステートメント
+\end{theorem}
+\begin{proof}
+% ここに証明
+\end{proof}
 
-\begin{quote}
-  \textbf{Ceva's theorem (oriented affine version).}  
-  Let $P$ be a real affine space modeled on an inner product space.  
-  Let $A,B,C : P$ be non-collinear points, and let $D,E,F : P$ lie on the lines $BC$, $CA$, and $AB$ respectively.  
-  Then the cevians $AD$, $BE$, and $CF$ are concurrent (i.e.\ there exists a point $X : P$ lying on each of the three cevians) if and only if
-  \[
-    \frac{BD}{DC} \cdot \frac{CE}{EA} \cdot \frac{AF}{FB} = 1,
-  \]
-  where the fractions are interpreted as oriented ratios along the corresponding lines.
-\end{quote}
+\section{一般化になっている点の明確化}
+% 2次元との対応、仮定の強弱、構造の最小性など
 
-In Lean, this statement is expressed using the existing notions of affine spaces and lines in \texttt{mathlib}, together with a definition of (signed) ratios along a line that is compatible with the affine structure. The rest of the development is devoted to specifying these notions in a reusable way and proving the equivalence between concurrency and the product condition.
-% TODO: 
-% - State the classical form(s) of Ceva's theorem in Euclidean geometry.
-% - Discuss oriented lengths / signed ratios if used.
-% - Fix the exact mathematical statement that will be formalized.
+% =========================
+\chapter{Lean による形式化}
+\section{Lean と mathlib の関連基盤}
+% import、使用する主要構造（AffineSpace 等）、既存定理との接続
 
-\subsection{Lean4 and \texttt{mathlib} Geometry}\label{subsec:lean-mathlib}
+\section{定義の Lean 化}
+% 数学の定義 → Lean の定義（型・命名・引数設計）
 
-Lean~4 is an interactive theorem prover based on dependent type theory.  
-Its core logic is a version of the calculus of inductive constructions: propositions live in the universe \texttt{Prop}, types of mathematical objects live in universes \texttt{Type~u}, and proofs are terms inhabiting these types.  
-The kernel checks all type-correctness and definitional equalities, ensuring that every accepted proof is mechanically verified.  
-On top of this kernel, Lean~4 offers an expressive language for defining structures, inductive types, and typeclasses, together with a tactic framework and an extensible elaboration and automation layer.
+\section{証明の Lean 化}
+% 数学の補題列 → Lean の lemma 群
+% tactic / term-style / simp 方針など
 
-The \texttt{mathlib} library is a large community-driven collection of formalized mathematics for Lean.  
-It provides a substantial hierarchy of algebraic, analytic, and geometric structures, as well as many classical theorems.  
-Our work builds on the existing \texttt{mathlib} infrastructure for affine and Euclidean geometry, which includes:
+\section{実装上の典型的障害と対処}
+% coercions, simp 正規形、非退化条件、局所座標化、等
 
-\begin{itemize}
-  \item \emph{Inner product spaces} and \emph{Euclidean spaces}, formalizing finite-dimensional real inner product spaces with the usual notions of distance and angle.
-  \item \emph{Affine spaces} modeled on normed or inner product spaces, including the general framework for points, vectors, and translations.  
-        In particular, Euclidean geometry is developed in terms of real affine spaces modeled on inner product spaces.
-  \item \emph{Affine subspaces}, which represent lines, planes, and higher-dimensional affine subsets. Lines through two points are special cases of affine subspaces.
-  \item \emph{Segments and rays}, defined using affine combinations of points; these support the usual operations on line segments and provide a bridge between synthetic and analytic viewpoints.
-  \item Tools related to \emph{barycentric coordinates} and \emph{simplices}, which allow points to be expressed as affine combinations of vertices of a simplex and are particularly well suited to reasoning about triangles and their cevians.
-\end{itemize}
+% =========================
+\chapter{既存モジュールの転用可能性}
+\section{転用できる部分}
+% 既存 API の再利用箇所を列挙
 
-Our formalization of Ceva's theorem is organized to fit naturally into this existing ecosystem.  
-At a high level, the development is split into two parts:
+\section{転用できない（不足している）部分}
+% 欠けている定義・補題・抽象化
 
-\begin{itemize}
-  \item A collection of general-purpose geometry lemmas and definitions: oriented ratios along a line, cevians defined in terms of affine subspaces, and notions of concurrency for triples of lines through a triangle.
-  \item The statement and proofs of Ceva's theorem itself, expressed in the abstract affine setting and instantiated in Euclidean spaces as needed.
-\end{itemize}
+\section{依存関係と設計上の制約}
+% import の増減、循環依存回避、将来拡張
 
-The code is written in Lean~4 and depends on a recent version of \texttt{mathlib}.  
-The project is structured so that the reusable geometric infrastructure (definitions of cevians, concurrency, and oriented ratios) lives in standalone files that do not depend specifically on Ceva's theorem, while the files containing the synthetic and coordinate-style proofs import this infrastructure.  
-This separation is intended to make it easy to reuse our setup in subsequent developments of triangle geometry, such as formalizations of Menelaus' theorem, properties of triangle centers, or projective configurations.
+% =========================
+\chapter{追加すべきライブラリと実装上の工夫}
+\section{追加ライブラリ一覧（ファイル／モジュール単位）}
+% 例：Geometry/Affine/Ceva.lean 等（仮）
 
-% TODO:
-% - Give a brief overview of Lean4 as an interactive theorem prover based on dependent type theory.
-% - Describe the existing affine/Euclidean geometry infrastructure in mathlib that we build on:
-%   Euclidean spaces, affine spaces, lines, segments, barycentric coordinates, etc.
-% - Mention the project setup: Lean and mathlib versions, file organization at a high level.
+\section{各モジュールの設計方針}
+% API、命名、simp lemma、非退化条件の表現
 
+\section{実装の工夫事項・特記事項}
+% PR を通す観点（一般性・粒度・再利用性・ドキュメント）
 
+\section{使用例・テスト}
+% 簡単な例題や rewrite 例
 
-\section{Formal Statement in Lean4}\label{sec:formal-statement}
-% TODO:
-% - Explain how points, lines, cevians, and ratios are represented in Lean (e.g., affine spaces over a field).
-% - Present the Lean theorem statement(s) corresponding to Ceva and its converse.
-% - Translate the Lean statement back into informal mathematics and explain any generalizations
-%   (e.g., arbitrary dimension, arbitrary field, oriented ratios).
-% - Discuss design choices and possible alternative formalisations (coordinates vs. abstract affine geometry, etc.).
+% =========================
+\chapter{本ライブラリで示せる別定理と発展例}
+\section{近縁定理への接続}
+% Menelaus、Desargues、Pascal など（扱える範囲で）
 
+\section{定理群のテンプレ化}
+% 共点・共線の抽象化、座標化、barycentric 連携
 
+\section{高次元へのロードマップ}
+% simplex 版への拡張など
 
-\section{Proof Strategy}\label{sec:proof-strategy}
-% TODO:
-% - Sketch the mathematical proof(s) that the formalization is based on:
-%   area-ratio proof, vector proof, barycentric-coordinates proof, etc.
-% - Explain how these proofs decompose into intermediate lemmas suitable for Lean.
-% - Describe the modular structure of the argument: generic lemmas vs. Ceva-specific lemmas.
-% - Comment on the role of tactics (e.g., \texttt{simp}, \texttt{ring}, \texttt{linarith}) in the overall strategy.
+% =========================
+\chapter{結論と今後の展望}
+\section{結論}
+% 成果の要約（数学／形式化／mathlib 追加）
 
+\section{今後の課題}
+% 自動化、API 洗練、他定理拡張、教育教材整備など
 
+\section{Lean 普及と形式化研究の展望}
+% あなたの長期ビジョン（自動証明支援）もここで回収
 
-\section{Implementation in Lean4}\label{sec:implementation}
-% TODO:
-% - Describe the file structure and import dependencies in the project / mathlib.
-% - List the main new definitions (cevians, affine ratios, concurrency predicates, etc.).
-% - Summarize the main lemmas and the final theorem proofs, focusing on the Lean-level structure.
-% - Discuss technical issues encountered (non-vanishing denominators, typeclass inference, simp configuration)
-%   and how they were resolved.
-
-
-
-\section{Evaluation and Reusability}\label{sec:evaluation}
-% TODO:
-% - Provide basic quantitative information: lines of code, number of lemmas, compilation time, etc.
-% - Discuss how the new infrastructure can be reused for other theorems in affine/Euclidean geometry
-%   (e.g., Menelaus, barycentric-coordinate identities, concurrency results).
-% - If possible, give small case studies or examples of reuse.
-
-
-
-\section{Related Work}\label{sec:related-work}
-% TODO:
-% - Survey previous formalizations of geometry and/or Ceva-like theorems in Coq, Isabelle/HOL, HOL Light, etc.
-% - Mention previous work on geometry in Lean and mathlib.
-% - Explain how this work differs: abstract affine setting, integration with barycentric coordinates,
-%   emphasis on reusable infrastructure, etc.
-
-
-
-\section{Conclusion and Future Work}\label{sec:conclusion}
-% TODO:
-% - Summarize the main achievements of the formalization.
-% - Outline future directions:
-%   * Further geometry theorems (Menelaus, Desargues, Pascal, etc.).
-%   * Extensions of the affine and barycentric APIs.
-%   * Connections to AI-assisted theorem proving and automated discovery of geometric proofs.
-
-%%
-%% Bibliography
-%%
-
-\bibliography{lipics-v2021-sample-article}
-
+% =========================
 \appendix
+\chapter{付録：主要 Lean コード抜粋}
+% 定義・主定理・重要補題を最小限に抜粋
 
-\section{Additional Lean4 Code and Proof Details}\label{sec:appendix-code}
-% TODO:
-% - Include selected Lean code excerpts if desired (main definitions, key lemmas, proof skeletons).
-% - Provide any auxiliary material that would clutter the main text.
+\chapter{付録：概念対応表（数学用語 ↔ Lean の型／定義）}
+% 辞書的な表
+
+\chapter{付録：実装ログ（ハマりどころ集）}
+% simp、型クラス、分母0回避、等
+
+\backmatter
+\chapter*{謝辞}
+\addcontentsline{toc}{chapter}{謝辞}
+% 必要なら
+
+\chapter*{参考文献}
+\addcontentsline{toc}{chapter}{参考文献}
+% thebibliography でも BibTeX/Biber でも可
+% \begin{thebibliography}{99}
+% \bibitem{...} ...
+% \end{thebibliography}
 
 \end{document}
