@@ -1,10 +1,22 @@
-/- Copyright (c) 2025 Joseph Myers. All rights reserved. Released under Apache 2.0 license as described in the file LICENSE. Authors: Joseph Myers -/
-import Mathlib.LinearAlgebra.AffineSpace.Simplex.Basic
+/-
+Copyright (c) 2025 Joseph Myers. All rights reserved.
+Released under Apache 2.0 license as described in the file LICENSE.
+Authors: Joseph Myers
+-/
 
-/-! # Ceva's theorem. This file proves various versions of Ceva's theorem. -/
+module
 
-@[expose]
-public section
+public import Mathlib
+
+/-!
+# Ceva's theorem.
+
+This file proves various versions of Ceva's theorem.
+
+-/
+
+@[expose] public section
+
 
 open scoped Affine
 
@@ -14,25 +26,25 @@ namespace AffineIndependent
 
 variable [Ring k] [AddCommGroup V] [Module k V] [AffineSpace V P]
 
-/-- Auxiliary lemma for exists_affineCombination_eq_smul_eq. -/
+/-- Auxiliary lemma for `exists_affineCombination_eq_smul_eq`. -/
 private lemma exists_affineCombination_eq_smul_eq_aux {p : ι → P} (hp : AffineIndependent k p)
-    {s : Set ι} (hs : s.Nonempty) {fs : s → Finset ι} (hfs : ∀ i, (i : ι) ∈ fs i)
-    {w : s → ι → k} (hw : ∀ i, ∑ j ∈ fs i, w i j = 1) {p' : P}
+    {s : Set ι} (hs : s.Nonempty) {fs : s → Finset ι} (hfs : ∀ i, (i : ι) ∈ fs i) {w : s → ι → k}
+    (hw : ∀ i, ∑ j ∈ fs i, w i j = 1) {p' : P}
     (hp' : ∀ i : s, p' ∈ line[k, p i, (fs i).affineCombination k p (w i)]) :
-    ∃ (w' : ι → k) (fs' : Finset ι), (∑ j ∈ fs', w' j = 1) ∧
-      fs'.affineCombination k p w' = p' ∧
+    ∃ (w' : ι → k) (fs' : Finset ι), (∑ j ∈ fs', w' j = 1) ∧ fs'.affineCombination k p w' = p' ∧
       ∀ i : s, ∃ r, ∀ j, r * Set.indicator ((fs i : Set ι) \ {(i : ι)}) (w i) j =
         Set.indicator ((fs' : Set ι) \ {(i : ι)}) w' j := by
   classical
-  have hp'' : ∀ i : s, ∃ r : k,
-      (fs i).affineCombination k p (AffineMap.lineMap (Finset.affineCombinationSingleWeights k (i : ι)) (w i) r) = p' := by
+  have hp'' : ∀ i : s, ∃ r : k, (fs i).affineCombination k p
+      (AffineMap.lineMap (Finset.affineCombinationSingleWeights k (i : ι)) (w i) r) = p' := by
     intro i
     simp_rw [mem_affineSpan_pair_iff_exists_lineMap_eq] at hp'
     obtain ⟨r, rfl⟩ := hp' i
     exact ⟨r, by simp [hfs]⟩
   obtain ⟨i', hi'⟩ := hs
   obtain ⟨ri', hri'⟩ := hp'' ⟨i', hi'⟩
-  let w' : ι → k := AffineMap.lineMap (Finset.affineCombinationSingleWeights k i') (w ⟨i', hi'⟩) ri'
+  let w' : ι → k :=
+    AffineMap.lineMap (Finset.affineCombinationSingleWeights k i') (w ⟨i', hi'⟩) ri'
   refine ⟨w', fs ⟨i', hi'⟩, ?_, ?_, ?_⟩
   · simp [w', AffineMap.lineMap_apply_module, Finset.sum_add_distrib, ← Finset.mul_sum, hw, hfs]
   · simp [w', hri']
@@ -54,13 +66,12 @@ private lemma exists_affineCombination_eq_smul_eq_aux {p : ι → P} (hp : Affin
 
 /-- A version of **Ceva's theorem** for an arbitrary indexed affinely independent family of points:
 consider some lines, each through one of the points and an affine combination of the points, and
-suppose they concur at p'; then p' is an affine combination of the points with weights proportional
-to those in the respective affine combinations. -/
+suppose they concur at `p'`; then `p'` is an affine combination of the points with weights
+proportional to those in the respective affine combinations. -/
 lemma exists_affineCombination_eq_smul_eq {p : ι → P} (hp : AffineIndependent k p) {s : Set ι}
-    (hs : s.Nonempty) {fs : s → Finset ι} {w : s → ι → k} (hw : ∀ i, ∑ j ∈ fs i, w i j = 1)
-    {p' : P} (hp' : ∀ i : s, p' ∈ line[k, p i, (fs i).affineCombination k p (w i)]) :
-    ∃ (w' : ι → k) (fs' : Finset ι), (∑ j ∈ fs', w' j = 1) ∧
-      fs'.affineCombination k p w' = p' ∧
+    (hs : s.Nonempty) {fs : s → Finset ι} {w : s → ι → k} (hw : ∀ i, ∑ j ∈ fs i, w i j = 1) {p' : P}
+    (hp' : ∀ i : s, p' ∈ line[k, p i, (fs i).affineCombination k p (w i)]) :
+    ∃ (w' : ι → k) (fs' : Finset ι), (∑ j ∈ fs', w' j = 1) ∧ fs'.affineCombination k p w' = p' ∧
       ∀ i : s, ∃ r, ∀ j, r * Set.indicator ((fs i : Set ι) \ {(i : ι)}) (w i) j =
         Set.indicator ((fs' : Set ι) \ {(i : ι)}) w' j := by
   classical
@@ -73,7 +84,8 @@ lemma exists_affineCombination_eq_smul_eq {p : ι → P} (hp : AffineIndependent
     by_cases hi : (i : ι) ∈ fs i
     · rw [Finset.insert_eq_of_mem hi]
       exact Finset.sum_congr rfl (fun j hj ↦ (by simp [hj]))
-    · simp only [hi, not_false_eq_true, Finset.sum_insert, SetLike.mem_coe, Set.indicator_of_notMem, zero_add]
+    · simp only [hi, not_false_eq_true, Finset.sum_insert, SetLike.mem_coe,
+        Set.indicator_of_notMem, zero_add]
       exact Finset.sum_congr rfl (fun j hj ↦ (by simp [hj]))
   have hp'x : ∀ i : s, p' ∈ line[k, p i, (fsx i).affineCombination k p (wx i)] := by
     intro i
@@ -94,14 +106,15 @@ lemma exists_affineCombination_eq_smul_eq {p : ι → P} (hp : AffineIndependent
 
 /-- A version of **Ceva's theorem** for a finite indexed affinely independent family of points:
 consider some lines, each through one of the points and an affine combination of the points, and
-suppose they concur at p'; then p' is an affine combination of the points with weights proportional
-to those in the respective affine combinations. -/
+suppose they concur at `p'`; then `p'` is an affine combination of the points with weights
+proportional to those in the respective affine combinations. -/
 lemma exists_affineCombination_eq_smul_eq_of_fintype [Fintype ι] {p : ι → P}
     (hp : AffineIndependent k p) {s : Set ι} (hs : s.Nonempty) {w : s → ι → k}
     (hw : ∀ i, ∑ j, w i j = 1) {p' : P}
     (hp' : ∀ i : s, p' ∈ line[k, p i, Finset.univ.affineCombination k p (w i)]) :
     ∃ w' : ι → k, (∑ j, w' j = 1) ∧ Finset.univ.affineCombination k p w' = p' ∧
-      ∀ i : s, ∃ r, ∀ j, r * Set.indicator {(i : ι)}ᶜ (w i) j = Set.indicator {(i : ι)}ᶜ w' j := by
+      ∀ i : s, ∃ r, ∀ j, r * Set.indicator {(i : ι)}ᶜ (w i) j =
+        Set.indicator {(i : ι)}ᶜ w' j := by
   classical
   obtain ⟨w'', fs'', hw'', hw''p', hi⟩ := hp.exists_affineCombination_eq_smul_eq hs hw hp'
   refine ⟨Set.indicator fs'' w'', ?_, ?_, ?_⟩
@@ -126,15 +139,17 @@ variable [CommRing k] [IsDomain k] [AddCommGroup V] [Module k V] [AffineSpace V 
 
 /-- **Ceva's theorem** for a triangle, expressed in terms of multiplying weights. -/
 lemma prod_eq_prod_one_sub_of_mem_line_point_lineMap {t : Triangle k P} {r : Fin 3 → k} {p' : P}
-    (hp' : ∀ i : Fin 3, p' ∈ line[k, t.points i,
-      AffineMap.lineMap (t.points (i + 1)) (t.points (i + 2)) (r i)]) :
+    (hp' : ∀ i : Fin 3, p' ∈
+      line[k, t.points i, AffineMap.lineMap (t.points (i + 1)) (t.points (i + 2)) (r i)]) :
     ∏ i, r i = ∏ i, (1 - r i) := by
   let w : ↑(Set.univ : Set (Fin 3)) → Fin 3 → k :=
     fun i ↦ Finset.affineCombinationLineMapWeights (i + 1) (i + 2) (r i)
   have hw : ∀ i, ∑ j, w i j = 1 := by simp [w]
-  have hp'w : ∀ i : ↑(Set.univ : Set (Fin 3)), p' ∈ line[k, t.points i,
-      Finset.univ.affineCombination k t.points (w i)] := by simpa [w] using hp'
-  obtain ⟨w', hw', rfl, h⟩ := t.independent.exists_affineCombination_eq_smul_eq_of_fintype (by simp) hw hp'w
+  have hp'w : ∀ i : ↑(Set.univ : Set (Fin 3)),
+      p' ∈ line[k, t.points i, Finset.univ.affineCombination k t.points (w i)] := by
+    simpa [w] using hp'
+  obtain ⟨w', hw', rfl, h⟩ :=
+    t.independent.exists_affineCombination_eq_smul_eq_of_fintype (by simp) hw hp'w
   have h' : ∀ i : Fin 3, ∃ c : k, ∀ j ≠ i, c * w ⟨i, by simp⟩ j = w' j := by
     intro i
     obtain ⟨c, hc⟩ := h ⟨i, by simp⟩
@@ -143,8 +158,8 @@ lemma prod_eq_prod_one_sub_of_mem_line_point_lineMap {t : Triangle k P} {r : Fin
   simp only [Fin.isValue, w] at h'
   let c : Fin 3 → k := fun i ↦ (h' i).choose
   have hc (i : Fin 3) : ∀ j : Fin 3, j ≠ i →
-      c i * Finset.affineCombinationLineMapWeights (i + 1) (i + 2) (r i) j = w' j :=
-    (h' i).choose_spec
+    c i * Finset.affineCombinationLineMapWeights (i + 1) (i + 2) (r i) j = w' j :=
+      (h' i).choose_spec
   have hc1 (i : Fin 3) : c i * (1 - r i) = w' (i + 1) := by
     rw [← hc i (i + 1) (by simp)]
     simp
@@ -154,7 +169,8 @@ lemma prod_eq_prod_one_sub_of_mem_line_point_lineMap {t : Triangle k P} {r : Fin
   have hcr : (∏ i, c i) * ∏ i, r i = (∏ i, c i) * ∏ i, (1 - r i) := by
     simp_rw [← Finset.prod_mul_distrib, Finset.prod_congr rfl (fun _ _ ↦ hc1 _),
       Finset.prod_congr rfl (fun _ _ ↦ hc2 _)]
-    suffices ∏ i, (w' ∘ Equiv.addRight 2) i = ∏ i, (w' ∘ Equiv.addRight 1) i by simpa using this
+    suffices ∏ i, (w' ∘ Equiv.addRight 2) i = ∏ i, (w' ∘ Equiv.addRight 1) i by
+      simpa using this
     simp_rw [Finset.prod_comp_equiv]
     simp
   by_cases hc : ∏ i, c i = 0
@@ -166,7 +182,8 @@ lemma prod_eq_prod_one_sub_of_mem_line_point_lineMap {t : Triangle k P} {r : Fin
       rw [← hw', Fin.sum_univ_three]
       fin_cases i <;> grind
     have hi1 : c (i + 1) * r (i + 1) = 1 := by simpa [add_assoc, hw'i0] using hc2 (i + 1)
-    have hi1' : c (i + 1) * (1 - r (i + 1)) = 0 := by simpa [add_assoc, hw'i2] using hc1 (i + 1)
+    have hi1' : c (i + 1) * (1 - r (i + 1)) = 0 := by
+     simpa [add_assoc, hw'i2] using hc1 (i + 1)
     have hci1 : c (i + 1) = 1 := by
       suffices c (i + 1) * (r (i + 1) + (1 - r (i + 1))) = 1 + 0 by simpa using this
       rw [mul_add, hi1, hi1']
@@ -177,7 +194,8 @@ lemma prod_eq_prod_one_sub_of_mem_line_point_lineMap {t : Triangle k P} {r : Fin
       suffices c (i + 2) * (r (i + 2) + (1 - r (i + 2))) = 0 + 1 by simpa using this
       rw [mul_add, hi2, hi2']
     have hri2 : r (i + 2) = 0 := by simpa [hci2] using hi2'
-    rw [Finset.prod_eq_zero (by simp) hri2, Finset.prod_eq_zero (i := i + 1) (by simp) (by simp [hri1])]
+    rw [Finset.prod_eq_zero (by simp) hri2,
+      Finset.prod_eq_zero (i := i + 1) (by simp) (by simp [hri1])]
   · exact mul_left_cancel₀ hc hcr
 
 end CommRing
@@ -188,9 +206,8 @@ variable [Field k] [IsDomain k] [AddCommGroup V] [Module k V] [AffineSpace V P]
 
 /-- **Ceva's theorem** for a triangle, expressed using division. -/
 lemma prod_div_one_sub_eq_one_of_mem_line_point_lineMap {t : Triangle k P} {r : Fin 3 → k}
-    (hr0 : ∀ i, r i ≠ 0) {p' : P}
-    (hp' : ∀ i : Fin 3, p' ∈ line[k, t.points i,
-      AffineMap.lineMap (t.points (i + 1)) (t.points (i + 2)) (r i)]) :
+    (hr0 : ∀ i, r i ≠ 0) {p' : P} (hp' : ∀ i : Fin 3, p' ∈
+      line[k, t.points i, AffineMap.lineMap (t.points (i + 1)) (t.points (i + 2)) (r i)]) :
     ∏ i, r i / (1 - r i) = 1 := by
   rw [Finset.prod_div_distrib, ← prod_eq_prod_one_sub_of_mem_line_point_lineMap hp', div_self]
   exact Finset.prod_ne_zero_iff.2 fun _ _ ↦ hr0 _

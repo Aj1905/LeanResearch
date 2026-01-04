@@ -1,0 +1,29 @@
+{"synthetic": false,
+ "schemaVersion": "2025-09-10",
+ "outputs":
+ {"o": ["dc430e60b52ae58b.olean"],
+  "i": "cc7677ff4b9ef9c0.ilean",
+  "c": "1aa08af1c82d3ee6.c"},
+ "log":
+ [{"message":
+   ".> LEAN_PATH=/Users/aj/Documents/LeanResearch/.lake/packages/Cli/.lake/build/lib/lean:/Users/aj/Documents/LeanResearch/.lake/packages/batteries/.lake/build/lib/lean:/Users/aj/Documents/LeanResearch/.lake/packages/Qq/.lake/build/lib/lean:/Users/aj/Documents/LeanResearch/.lake/packages/aesop/.lake/build/lib/lean:/Users/aj/Documents/LeanResearch/.lake/packages/proofwidgets/.lake/build/lib/lean:/Users/aj/Documents/LeanResearch/.lake/packages/importGraph/.lake/build/lib/lean:/Users/aj/Documents/LeanResearch/.lake/packages/LeanSearchClient/.lake/build/lib/lean:/Users/aj/Documents/LeanResearch/.lake/packages/plausible/.lake/build/lib/lean:/Users/aj/Documents/mathlib4/.lake/build/lib/lean:/Users/aj/Documents/LeanResearch/.lake/build/lib/lean /Users/aj/.elan/toolchains/leanprover--lean4---v4.27.0-rc1/bin/lean /Users/aj/Documents/LeanResearch/LeanResearch.lean -o /Users/aj/Documents/LeanResearch/.lake/build/lib/lean/LeanResearch.olean -i /Users/aj/Documents/LeanResearch/.lake/build/lib/lean/LeanResearch.ilean -c /Users/aj/Documents/LeanResearch/.lake/build/ir/LeanResearch.c --setup /Users/aj/Documents/LeanResearch/.lake/build/ir/LeanResearch.setup.json --json",
+   "level": "trace"}],
+ "inputs":
+ [["LeanResearch:deps",
+   [["deps",
+     [["LeanResearch/LeanResearch:extraDep",
+       [["@LeanResearch:extraDep", "00000000000006bb"]]],
+      ["imports",
+       [["Mathlib transitive imports (legacy)", "4bf317abeebd54d1"],
+        ["Mathlib:importAllArts", "31aeb4965a03990a"]]]]],
+    ["libs",
+     [["import dynlibs", "00000000000006bb"],
+      ["package external libraries", "00000000000006bb"],
+      ["module dynlibs", "00000000000006bb"],
+      ["module plugins", "00000000000006bb"]]]]],
+  ["Lean 4.27.0, commit 2fcce7258eeb6e324366bc25f9058293b04b7547",
+   "6f43b597efea5d4c"],
+  ["/Users/aj/Documents/LeanResearch/LeanResearch.lean", "2a0e75a5f7498fc6"],
+  ["options", "00000000000006bb"],
+  ["Module.leanArgs: #[]", "00000000000006bb"]],
+ "depHash": "53a1e5aa6640dba7"}
