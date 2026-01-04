@@ -12,6 +12,8 @@ $(BUILD_DIR):
 	@mkdir -p $(BUILD_DIR)
 
 # デフォルトターゲット
+.DEFAULT_GOAL := all
+
 all: $(PDF_FILE)
 	@echo "✓ 完了"
 
@@ -23,10 +25,10 @@ $(PDF_FILE): $(TEX_FILE) | $(BUILD_DIR)
 	@echo "コンパイル中: $(TEX_FILE)"
 	@echo "使用コンパイラ: lualatex"
 	@echo "中間ファイルは $(BUILD_DIR)/ に出力されます"
-	lualatex -interaction=nonstopmode -output-directory=$(BUILD_DIR) $(TEX_FILE)
-	lualatex -interaction=nonstopmode -output-directory=$(BUILD_DIR) $(TEX_FILE)
-	@if [ -f "$(BUILD_DIR)/$(PDF_FILE)" ]; then \
-		cp $(BUILD_DIR)/$(PDF_FILE) $(PDF_FILE); \
+	lualatex -interaction=nonstopmode $(TEX_FILE)
+	lualatex -interaction=nonstopmode $(TEX_FILE)
+	@mv -f *.aux *.log *.out *.toc *.lof *.lot *.fdb_latexmk *.fls *.synctex.gz $(BUILD_DIR)/ 2>/dev/null || true
+	@if [ -f "$(PDF_FILE)" ]; then \
 		echo "✓ PDF生成成功: $(PDF_FILE)"; \
 		open "$(PDF_FILE)"; \
 	else \

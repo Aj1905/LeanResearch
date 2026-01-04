@@ -152,6 +152,26 @@ make clean        # 中間ファイルとbuildディレクトリを削除
 - PDFファイルは元のディレクトリに生成されます
 - LuaLaTeXが必要です（`lualatex`コマンドが利用可能であること）
 
+### トラブルシューティング
+
+#### フォントキャッシュエラーが発生する場合
+
+LuaLaTeXで「no writeable cache path」というエラーが発生する場合、フォントキャッシュを更新する必要があります：
+
+```bash
+# フォントキャッシュを更新
+luaotfload-tool --update
+
+# または、キャッシュを強制的に再生成
+luaotfload-tool --force-update
+```
+
+#### PDFが生成されない場合
+
+1. `make clean`でクリーンアップしてから再試行
+2. `make all`または`make pdf`を明示的に実行
+3. エラーログ（`build/graduation_paper.log`）を確認
+
 ## 参考文献
 
 - DeepMind, *We achieved gold medal-level performance on the 2025 IMO*, 2025.

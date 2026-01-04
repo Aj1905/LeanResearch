@@ -63,7 +63,7 @@
 \newcommand{\mathlib}{\textsf{mathlib}}
 
 % --- metadata ---
-\title{チェバの定理の高次元一般化と \Lean/\mathlib への形式化}
+\title{チェバの定理の高次元一般化と\\ \Lean/\mathlib への形式化}
 \author{秋田 隼}
 \date{2026/1/9}
 
@@ -77,7 +77,7 @@
 \Lean/\mathlib 上での形式化を目標とする。
 主な貢献は以下である。
 \begin{itemize}[leftmargin=2em]
-  \item （数学）$n$次元アフィン空間でのチェバ型定理（単体版）とその逆の明確なステートメント。
+  \item （数学）$n$次元アフィン空間でのチェバ型定理とその逆の明確なステートメント。
   \item （形式化）既存の \mathlib の構造を調査し、再利用可能部分と不足部分を切り分ける設計指針。
   \item （実装）不足する補題・定義をモジュール化して追加し、主定理の機械検証を通す。
 \end{itemize}
@@ -91,18 +91,18 @@
 \section{研究背景と動機}
 近年の生成AIは、言語モデルに推論能力を付与する工夫や、計算ツール・検証器との連携によって急速に性能を向上させている。
 特に2025年には、複数のAIモデルが国際数学オリンピック（IMO）の問題セットに対して
-金メダル基準（gold-medal standard）に相当する得点を達成したと報告された\cite{DeepMindIMO2025,ReutersIMO2025,NatureIMO2025,OpenAIIMO2025X}。
-一方で、自然言語のみで推論するLLMは、もっともらしいが誤りを含む（ハルシネーション）出力を生成しうる。
+金メダル基準（gold-medal standard）に相当する得点を達成したと報告された\cite{DeepMindIMO2025}。
 
+一方で、自然言語のみで推論するLLMは、もっともらしいが誤りを含む出力（ハルシネーション）を生成しうる。
 定理証明器（例：\Lean）を統合した枠組みでは、自然言語の解法案を全部または部分的に形式化して検証し、
 失敗時はフィードバックによる修正ループを回せる。
-そのため、形式検証が及ぶ範囲についてはハルシネーションを大幅に抑制できる。
-ただし、問題文の形式化や自然言語への説明生成には依然として誤りが入りうるため、
-形式化対象となる数学ライブラリの充実が重要となる。
+そのため、形式検証が及ぶ範囲についてはハルシネーションを大幅に抑制でき、結果として出力全体に対するハルシネーションの頻度も抑えられる。
+ただし、問題文の形式化や自然言語への説明生成には依然として誤りが入りうる。
+よって、「形式検証の及ぶ範囲を拡大する」、「問題文の形式化精度を向上させる」ことで生成AIの数学力は向上すると考えられる。
 
 \section{本研究の目的}
 本研究の目的は、チェバの定理の高次元一般化（およびその逆）を \Lean/\mathlib に追加可能な形で整備し、
-AIによる形式化・自動証明支援の基盤を拡充することである。
+生成AIの数学力向上に寄与する基盤を拡充することである。
 
 \section{本研究の貢献}
 \begin{itemize}[leftmargin=2em]
@@ -112,21 +112,175 @@ AIによる形式化・自動証明支援の基盤を拡充することである
 \end{itemize}
 
 \section{本論文の構成}
-第2章で2次元チェバとアフィン性を整理し、第3章で一般化の設計空間を述べる。
+第2章で2次元チェバとアフィン性を整理し、第3章でどのような一般化が考えられるかを述べる。
 第4章で \mathlib へ導入する一般化を選定し、第5章で数学的証明を与える。
 第6章以降で形式化の詳細、再利用可能性、追加ライブラリ設計、応用例を述べる。
 
 % =========================================================
 \chapter{チェバの定理（2次元）とアフィン性}
 \section{古典的チェバの定理の定式化}
-% TODO: 2次元チェバの命題（比の積=1 等）を書き、必要なら有向距離・比の定義も置く。
+三角形$\triangle ABC$と、各辺上の点$D, E, F$（それぞれ辺$BC, CA, AB$上）を考える。
+ここで、$D, E, F$は頂点と一致しないものとする。
+
+\subsection{有向距離と比の定義}
+直線上の2点$P, Q$に対して、有向距離$\overrightarrow{PQ}$を、$P$から$Q$への向きを考慮した距離として定義する。
+すなわち、$P$と$Q$の座標を$p, q$とすると、$\overrightarrow{PQ} = q - p$とする。
+このとき、$\overrightarrow{QP} = -\overrightarrow{PQ}$が成り立つ。
+
+点$D$が辺$BC$上にあるとき、有向比$\frac{BD}{DC}$を
+\[
+\frac{BD}{DC} = \frac{\overrightarrow{BD}}{\overrightarrow{DC}}
+\]
+と定義する。同様に、$E$が辺$CA$上、$F$が辺$AB$上にあるとき、
+\[
+\frac{CE}{EA} = \frac{\overrightarrow{CE}}{\overrightarrow{EA}}, \quad
+\frac{AF}{FB} = \frac{\overrightarrow{AF}}{\overrightarrow{FB}}
+\]
+と定義する。
+
+\subsection{チェバの定理のステートメント}
+\begin{theorem}[チェバの定理（2次元）]
+三角形$\triangle ABC$の各辺$BC, CA, AB$上にそれぞれ点$D, E, F$をとる（頂点とは異なる）。
+このとき、3直線$AD, BE, CF$が1点で交わるための必要十分条件は、
+\[
+\frac{BD}{DC} \cdot \frac{CE}{EA} \cdot \frac{AF}{FB} = 1
+\]
+が成り立つことである。
+\end{theorem}
+
+有向比を用いることで、3直線が三角形の内部で交わる場合だけでなく、外部で交わる場合も統一的に扱える。
 
 \section{チェバの定理がアフィンな結果であること}
-% TODO: 「アフィン変換で不変な量のみで記述できる／アフィン同値で保存される」という意味を説明。
-% 必要なら、重心座標・比の不変性を用いた短い証明を与える。
+チェバの定理のステートメントには、一見すると線分の長さ（$BD, DC$など）が現れるため、
+ユークリッド距離に依存する定理のように見えるかもしれない。
+しかし、実際には定理の条件は比$\frac{BD}{DC}$などのみで記述されており、
+これらの比はアフィン変換で不変である。したがって、チェバの定理は本質的にアフィン幾何の結果である。
 
-\section{形式化で必要となる構造の整理}
-% TODO: AffineSpace / AffineMap / barycentric coords / simplex など、Lean側の型・構造へ接続する。
+\subsection{アフィン変換と比の不変性}
+アフィン変換とは、平行性と比を保つ変換である。
+より正確には、アフィン空間$\mathbb{R}^n$上の変換$\varphi: \mathbb{R}^n \to \mathbb{R}^n$が
+$\varphi(x) = Ax + b$（$A$は正則行列、$b$はベクトル）の形で表されるとき、$\varphi$をアフィン変換という。
+
+アフィン変換の重要な性質として、同一直線上にある3点$P, Q, R$（$Q$は$P$と$R$の間）に対して、
+比$\frac{PQ}{QR}$はアフィン変換で不変である：
+\[
+\frac{\overrightarrow{PQ}}{\overrightarrow{QR}} = \frac{\overrightarrow{\varphi(P)\varphi(Q)}}{\overrightarrow{\varphi(Q)\varphi(R)}}
+\]
+これは、アフィン変換が線形変換と平行移動の合成であり、線形変換がベクトルの比を保つことから従う。
+
+\subsection{重心座標による説明}
+三角形$\triangle ABC$内の任意の点$P$は、重心座標（barycentric coordinates）を用いて
+\[
+P = \alpha A + \beta B + \gamma C, \quad \alpha + \beta + \gamma = 1
+\]
+と一意に表される。ここで、$\alpha, \beta, \gamma$は実数である。
+
+辺$BC$上の点$D$は、$D = (1-t)B + tC$（$t \in \mathbb{R}$）と表せる。
+このとき、有向比は
+\[
+\frac{BD}{DC} = \frac{t}{1-t}
+\]
+となる。同様に、$E = (1-u)C + uA$、$F = (1-v)A + vB$とすると、
+\[
+\frac{CE}{EA} = \frac{u}{1-u}, \quad \frac{AF}{FB} = \frac{v}{1-v}
+\]
+である。
+
+3直線$AD, BE, CF$が1点$P$で交わることは、$P$の重心座標が
+\[
+P = \frac{\alpha A + \beta B + \gamma C}{\alpha + \beta + \gamma}
+\]
+と表され、かつ$P$が各辺上にあることと同値である。
+この条件は、重心座標の比のみで記述され、ユークリッド距離には依存しない。
+
+\subsection{アフィン同値性}
+以上の考察から、チェバの定理は以下の意味でアフィンな結果であることがわかる：
+\begin{itemize}[leftmargin=2em]
+  \item 定理の条件（比の積=1）は、アフィン変換で不変な量（比）のみで記述されている。
+  \item 定理の結論（3直線の共点性）も、アフィン変換で保存される性質である。
+  \item したがって、任意のアフィン変換を施しても、チェバの定理の真偽は変わらない。
+\end{itemize}
+
+この性質により、チェバの定理はユークリッド距離や角度に依存せず、
+アフィン構造（平行性、比、共線性）のみに基づく定理であることが明確になる。
+これは、高次元への一般化を考える際にも重要な観点となる。
+
+\section{定理で現れる数学的概念の紹介}
+チェバの定理を \Lean/\mathlib で形式化するために必要な数学的構造を整理する。
+以下では、各概念の数学的定義と、\mathlib における対応する型・構造を明示する。
+
+\subsection{アフィン空間}
+\begin{definition}[アフィン空間]
+体$k$上のベクトル空間$V$に対して、集合$P$が$V$上のアフィン空間であるとは、
+以下の条件を満たす写像$+ : P \times V \to P$（点とベクトルの和）が存在することである：
+\begin{itemize}[leftmargin=2em]
+  \item 任意の$p \in P$に対して、$p + \mathbf{0} = p$（$\mathbf{0}$は$V$の零ベクトル）
+  \item 任意の$p \in P$と$v, w \in V$に対して、$(p + v) + w = p + (v + w)$
+  \item 任意の$p, q \in P$に対して、$p + (q - p) = q$を満たすベクトル$q - p \in V$が一意に存在する
+\end{itemize}
+\end{definition}
+
+\mathlib では、\texttt{AffineSpace V P}という型クラスがこの構造を提供する。
+ここで、\texttt{V}はベクトル空間、\texttt{P}は点の型である。
+
+\subsection{アフィン写像}
+\begin{definition}[アフィン写像]
+アフィン空間$P_1$（ベクトル空間$V_1$上）からアフィン空間$P_2$（ベクトル空間$V_2$上）への
+アフィン写像とは、線形写像$L: V_1 \to V_2$と点$b \in P_2$が存在して、
+任意の$p \in P_1$に対して
+\[
+f(p) = L(p - p_0) + b
+\]
+と表される写像$f: P_1 \to P_2$である（$p_0$は$P_1$の任意の基点）。
+\end{definition}
+
+\mathlib では、\texttt{AffineMap k P₁ P₂}がアフィン写像の型として定義されている。
+アフィン写像は平行性と比を保つ変換である。
+
+\subsection{重心座標}
+\begin{definition}[重心座標]
+アフィン空間$P$上の$n+1$個の点$p_0, p_1, \ldots, p_n$がアフィン独立（affinely independent）であるとき、
+任意の点$p \in P$は
+\[
+p = \sum_{i=0}^{n} \lambda_i p_i, \quad \sum_{i=0}^{n} \lambda_i = 1
+\]
+と一意に表される。このとき、$(\lambda_0, \lambda_1, \ldots, \lambda_n)$を
+$p$の$p_0, p_1, \ldots, p_n$に関する重心座標（barycentric coordinates）という。
+\end{definition}
+
+三角形$\triangle ABC$の場合、任意の点$P$は$P = \alpha A + \beta B + \gamma C$（$\alpha + \beta + \gamma = 1$）
+と表され、$(\alpha, \beta, \gamma)$が$P$の重心座標である。
+
+\mathlib では、\texttt{Finset.affineCombination}や関連する補題が重心座標の計算をサポートする。
+
+\subsection{チェビアン}
+\begin{definition}[チェビアン]
+三角形$\triangle ABC$において、頂点$A$と対辺$BC$上の点$D$を結ぶ直線$AD$を、
+頂点$A$から引いたチェビアン（cevian）という。
+同様に、$BE$（$E$は辺$CA$上）、$CF$（$F$は辺$AB$上）もチェビアンである。
+\end{definition}
+
+チェバの定理は、3本のチェビアンが1点で交わる条件を与える定理である。
+
+\subsection{チェビアンの足}
+\begin{definition}[チェビアンの足]
+三角形$\triangle ABC$において、頂点$A$から引いたチェビアン$AD$と対辺$BC$の交点$D$を、
+チェビアン$AD$の足（foot）という。
+同様に、$E$はチェビアン$BE$の足、$F$はチェビアン$CF$の足である。
+\end{definition}
+
+チェバの定理では、各辺上の点$D, E, F$がチェビアンの足として機能する。
+形式化においては、これらの点が適切な辺上にあることを保証する条件が必要となる。
+
+\subsection{\mathlib での実装方針}
+以上の構造を踏まえると、\mathlib での形式化には以下の要素が必要となる：
+\begin{itemize}[leftmargin=2em]
+  \item \texttt{AffineSpace}：アフィン空間の構造
+  \item \texttt{AffineMap}：アフィン写像の操作
+  \item 重心座標の計算と比の関係
+  \item 単体（simplex）の定義と面（face）の概念（高次元一般化に必要）
+  \item 点が線分・辺上にあることの判定
+\end{itemize}
 
 % =========================================================
 \chapter{高次元への一般化の候補}
@@ -275,15 +429,6 @@ AIによる形式化・自動証明支援の基盤を拡充することである
 
 \bibitem{DeepMindIMO2025}
 Google DeepMind, \emph{Advanced version of Gemini with Deep Think officially achieves gold-medal standard at the International Mathematical Olympiad}, 2025.
-
-\bibitem{OpenAIIMO2025X}
-OpenAI, \emph{We achieved gold medal-level performance on the 2025 IMO}, 2025.
-
-\bibitem{ReutersIMO2025}
-Reuters, \emph{Google and OpenAI's AI models win milestone gold at global math competition}, 2025.
-
-\bibitem{NatureIMO2025}
-D. Castelvecchi, \emph{DeepMind and OpenAI models solve maths problems at level of top students}, Nature, 2025.
 
 \end{thebibliography}
 
