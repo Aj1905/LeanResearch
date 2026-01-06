@@ -1,4 +1,4 @@
-This is LuaHBTeX, Version 1.21.0 (TeX Live 2025)  (format=lualatex 2025.10.21)  1 JAN 2026 12:40
+This is LuaHBTeX, Version 1.21.0 (TeX Live 2025)  (format=lualatex 2025.10.21)  5 JAN 2026 09:24
  restricted system commands enabled.
 **graduation_paper.tex
 (./graduation_paper.tex
@@ -787,39 +787,39 @@ File: bkm-pdftex.def 2023-12-10 v1.31 bookmark driver for pdfTeX and luaTeX (HO
 Package hyperref Info: Option `colorlinks' set `true' on input line 49.
 \c@theorem=\count325
 LaTeX Font Info:    Font shape `JY3/mc/m/n' will be
-(Font)              scaled to size 9.24713pt on input line 70.
+(Font)              scaled to size 9.24713pt on input line 74.
 
 (./graduation_paper.aux)
 \openout1 = graduation_paper.aux
 
-LaTeX Font Info:    Checking defaults for OML/cmm/m/it on input line 70.
-LaTeX Font Info:    ... okay on input line 70.
-LaTeX Font Info:    Checking defaults for OMS/cmsy/m/n on input line 70.
-LaTeX Font Info:    ... okay on input line 70.
-LaTeX Font Info:    Checking defaults for OT1/cmr/m/n on input line 70.
-LaTeX Font Info:    ... okay on input line 70.
-LaTeX Font Info:    Checking defaults for T1/cmr/m/n on input line 70.
-LaTeX Font Info:    ... okay on input line 70.
-LaTeX Font Info:    Checking defaults for TS1/cmr/m/n on input line 70.
-LaTeX Font Info:    ... okay on input line 70.
-LaTeX Font Info:    Checking defaults for TU/lmr/m/n on input line 70.
-LaTeX Font Info:    ... okay on input line 70.
-LaTeX Font Info:    Checking defaults for OMX/cmex/m/n on input line 70.
-LaTeX Font Info:    ... okay on input line 70.
-LaTeX Font Info:    Checking defaults for U/cmr/m/n on input line 70.
-LaTeX Font Info:    ... okay on input line 70.
-LaTeX Font Info:    Checking defaults for JY3/mc/m/n on input line 70.
-LaTeX Font Info:    ... okay on input line 70.
-LaTeX Font Info:    Checking defaults for JT3/mc/m/n on input line 70.
-LaTeX Font Info:    ... okay on input line 70.
-LaTeX Font Info:    Checking defaults for PD1/pdf/m/n on input line 70.
-LaTeX Font Info:    ... okay on input line 70.
-LaTeX Font Info:    Checking defaults for PU/pdf/m/n on input line 70.
-LaTeX Font Info:    ... okay on input line 70.
+LaTeX Font Info:    Checking defaults for OML/cmm/m/it on input line 74.
+LaTeX Font Info:    ... okay on input line 74.
+LaTeX Font Info:    Checking defaults for OMS/cmsy/m/n on input line 74.
+LaTeX Font Info:    ... okay on input line 74.
+LaTeX Font Info:    Checking defaults for OT1/cmr/m/n on input line 74.
+LaTeX Font Info:    ... okay on input line 74.
+LaTeX Font Info:    Checking defaults for T1/cmr/m/n on input line 74.
+LaTeX Font Info:    ... okay on input line 74.
+LaTeX Font Info:    Checking defaults for TS1/cmr/m/n on input line 74.
+LaTeX Font Info:    ... okay on input line 74.
+LaTeX Font Info:    Checking defaults for TU/lmr/m/n on input line 74.
+LaTeX Font Info:    ... okay on input line 74.
+LaTeX Font Info:    Checking defaults for OMX/cmex/m/n on input line 74.
+LaTeX Font Info:    ... okay on input line 74.
+LaTeX Font Info:    Checking defaults for U/cmr/m/n on input line 74.
+LaTeX Font Info:    ... okay on input line 74.
+LaTeX Font Info:    Checking defaults for JY3/mc/m/n on input line 74.
+LaTeX Font Info:    ... okay on input line 74.
+LaTeX Font Info:    Checking defaults for JT3/mc/m/n on input line 74.
+LaTeX Font Info:    ... okay on input line 74.
+LaTeX Font Info:    Checking defaults for PD1/pdf/m/n on input line 74.
+LaTeX Font Info:    ... okay on input line 74.
+LaTeX Font Info:    Checking defaults for PU/pdf/m/n on input line 74.
+LaTeX Font Info:    ... okay on input line 74.
 LaTeX Font Info:    Font shape `JT3/mc/m/n' will be
-(Font)              scaled to size 11.09653pt on input line 70.
+(Font)              scaled to size 11.09653pt on input line 74.
 LaTeX Font Info:    Font shape `JY3/mc/m/n' will be
-(Font)              scaled to size 11.09653pt on input line 70.
+(Font)              scaled to size 11.09653pt on input line 74.
 
 *geometry* driver: auto-detecting
 *geometry* detected driver: luatex
@@ -879,24 +879,24 @@ File: epstopdf-sys.cfg 2010/07/13 v1.3 Configuration of (r)epstopdf for TeX Liv
 e
 ))
 \c@lstlisting=\count332
-Package hyperref Info: Link coloring ON on input line 70.
+Package hyperref Info: Link coloring ON on input line 74.
 (load cache: extra_lmroman17-regular.luc)
 LaTeX Font Info:    Font shape `JT3/mc/m/n' will be
-(Font)              scaled to size 19.17477pt on input line 72.
+(Font)              scaled to size 19.17477pt on input line 76.
 LaTeX Font Info:    Font shape `JY3/mc/m/n' will be
-(Font)              scaled to size 19.17477pt on input line 72.
+(Font)              scaled to size 19.17477pt on input line 76.
 (load cache: extra_lmsans17-regular.luc)(load cache: extra_lmroman12-regular.luc
 )
 LaTeX Font Info:    Font shape `JT3/mc/m/n' will be
-(Font)              scaled to size 13.31583pt on input line 72.
+(Font)              scaled to size 13.31583pt on input line 76.
 LaTeX Font Info:    Font shape `JY3/mc/m/n' will be
-(Font)              scaled to size 13.31583pt on input line 72.
-LaTeX Font Info:    Calculating math sizes for size <14.39996> on input line 72
+(Font)              scaled to size 13.31583pt on input line 76.
+LaTeX Font Info:    Calculating math sizes for size <14.39996> on input line 76
 .
 LaTeX Font Info:    Font shape `JY3/mc/m/n' will be
-(Font)              scaled to size 9.32103pt on input line 72.
+(Font)              scaled to size 9.32103pt on input line 76.
 LaTeX Font Info:    Font shape `JY3/mc/m/n' will be
-(Font)              scaled to size 6.65791pt on input line 72.
+(Font)              scaled to size 6.65791pt on input line 76.
 
 
 [1
@@ -908,26 +908,26 @@ LaTeX Font Info:    Font shape `JY3/mc/m/n' will be
 
 ]
 LaTeX Font Info:    Font shape `JT3/mc/m/n' will be
-(Font)              scaled to size 27.60815pt on input line 74.
+(Font)              scaled to size 27.60815pt on input line 78.
 LaTeX Font Info:    Font shape `JY3/mc/m/n' will be
-(Font)              scaled to size 27.60815pt on input line 74.
-LaTeX Font Info:    Calculating math sizes for size <11.99997> on input line 76
+(Font)              scaled to size 27.60815pt on input line 78.
+LaTeX Font Info:    Calculating math sizes for size <11.99997> on input line 79
 .
 LaTeX Font Info:    Font shape `JY3/mc/m/n' will be
-(Font)              scaled to size 7.76752pt on input line 76.
+(Font)              scaled to size 7.76752pt on input line 79.
 LaTeX Font Info:    Font shape `JY3/mc/m/n' will be
-(Font)              scaled to size 5.54826pt on input line 76.
+(Font)              scaled to size 5.54826pt on input line 79.
 (load cache: extra_lmsans10-regular.luc)
 
 (load cache: extra_lmroman10-bold.luc)
 LaTeX Font Info:    Font shape `JT3/mc/b/n' in size <11.99997> not available
-(Font)              Font shape `JT3/gt/m/n' tried instead on input line 85.
+(Font)              Font shape `JT3/gt/m/n' tried instead on input line 88.
 LaTeX Font Info:    Font shape `JT3/gt/m/n' will be
-(Font)              scaled to size 11.09653pt on input line 85.
+(Font)              scaled to size 11.09653pt on input line 88.
 LaTeX Font Info:    Font shape `JY3/mc/b/n' in size <11.99997> not available
-(Font)              Font shape `JY3/gt/m/n' tried instead on input line 85.
+(Font)              Font shape `JY3/gt/m/n' tried instead on input line 88.
 LaTeX Font Info:    Font shape `JY3/gt/m/n' will be
-(Font)              scaled to size 11.09653pt on input line 85.
+(Font)              scaled to size 11.09653pt on input line 88.
 (load cache: extra_haranoajigothic-medium.luc) [1
 
 ]
@@ -951,13 +951,13 @@ LaTeX Font Info:    Font shape `JY3/gt/m/n' will be
 ]
 第1章
 LaTeX Font Info:    Font shape `JT3/mc/m/n' will be
-(Font)              scaled to size 23.01419pt on input line 90.
+(Font)              scaled to size 23.01419pt on input line 93.
 LaTeX Font Info:    Font shape `JY3/mc/m/n' will be
-(Font)              scaled to size 23.01419pt on input line 90.
+(Font)              scaled to size 23.01419pt on input line 93.
 LaTeX Font Info:    Font shape `JT3/mc/m/n' will be
-(Font)              scaled to size 15.97897pt on input line 91.
+(Font)              scaled to size 15.97897pt on input line 94.
 LaTeX Font Info:    Font shape `JY3/mc/m/n' will be
-(Font)              scaled to size 15.97897pt on input line 91.
+(Font)              scaled to size 15.97897pt on input line 94.
 (load cache: extra_lmsans12-regular.luc)
 
 
@@ -970,72 +970,153 @@ warning  (pdf backend): ignoring duplicate destination with the name 'page.1'
 warning  (pdf backend): ignoring duplicate destination with the name 'page.2'
 [2]
 第2章
-(load cache: extra_lmroman10-italic.luc)
-LaTeX Font Info:    Kanji font shape `JY3/mc/m/it' undefined
-(Font)              No change on input line 142.
-
+(load cache: extra_lmmono10-regular.luc)
 
 [3
 
 ]
 
-[4](load cache: extra_lmmono10-regular.luc)
-
-[5]
-
-[6
+[4
 Missing character: There is no ₁ (U+2081) in font file:HaranoAjiMincho-Regular
 .otf:-kern;jfm=ujis!
 Missing character: There is no ₂ (U+2082) in font file:HaranoAjiMincho-Regular
 .otf:-kern;jfm=ujis!
 ]
+Overfull \hbox (43.82056pt too wide) in paragraph at lines 204--206
+[]|\JY3/mc/m/n/11.99997 三 |角 |形 |は $\OT1/cmr/m/n/11.99997 2$ |\JY3/mc/m
+/n/11.99997 次 |元 |単 |体 []  |四 |面 |体 |は $\OT1/cmr/m/n/11.99997 3$ |\JY3/mc/m/n/11.99997 
+次 |元 |単 |体 |の |例 |で |あ |る []  \TU/lmss/m/n/11.99997 mathlib\T
+U/lmr/m/n/11.99997 4 |\JY3/mc/m/n/11.99997 で |は []  \TU/lmtt/m/n/11.99997 Ge
+ometry.Euclidean.Simplex
+ []
 
-[7]
 
-[8
+
+[5]
+
+[6
 
 ]
 第3章
 
+Package hyperref Warning: Token not allowed in a PDF string (Unicode):
+(hyperref)                removing `math shift' on input line 233.
 
-[9]
+
+Package hyperref Warning: Token not allowed in a PDF string (Unicode):
+(hyperref)                removing `math shift' on input line 233.
+
+LaTeX Font Info:    Calculating math sizes for size <29.85593> on input line 23
+3.
+LaTeX Font Info:    Font shape `JY3/mc/m/n' will be
+(Font)              scaled to size 19.32562pt on input line 233.
+LaTeX Font Info:    Font shape `JY3/mc/m/n' will be
+(Font)              scaled to size 13.80408pt on input line 233.
+LaTeX Font Info:    Calculating math sizes for size <17.27994> on input line 23
+4.
+LaTeX Font Info:    Font shape `JY3/mc/m/n' will be
+(Font)              scaled to size 11.18523pt on input line 234.
+LaTeX Font Info:    Font shape `JY3/mc/m/n' will be
+(Font)              scaled to size 7.98949pt on input line 234.
+
+Package hyperref Warning: Token not allowed in a PDF string (Unicode):
+(hyperref)                removing `math shift' on input line 234.
+
+
+Package hyperref Warning: Token not allowed in a PDF string (Unicode):
+(hyperref)                removing `math shift' on input line 234.
+
+(load cache: extra_lmroman10-italic.luc)
+LaTeX Font Info:    Kanji font shape `JY3/mc/m/it' undefined
+(Font)              No change on input line 236.
+
+
+[7]
+
+[8]
+第4章
+
+Package hyperref Warning: Token not allowed in a PDF string (Unicode):
+(hyperref)                removing `math shift' on input line 312.
+
+
+Package hyperref Warning: Token not allowed in a PDF string (Unicode):
+(hyperref)                removing `math shift' on input line 312.
+
+
+Package hyperref Warning: Token not allowed in a PDF string (Unicode):
+(hyperref)                removing `math shift' on input line 315.
+
+
+Package hyperref Warning: Token not allowed in a PDF string (Unicode):
+(hyperref)                removing `math shift' on input line 315.
+
+
+Package hyperref Warning: Token not allowed in a PDF string (Unicode):
+(hyperref)                removing `math shift' on input line 318.
+
+
+Package hyperref Warning: Token not allowed in a PDF string (Unicode):
+(hyperref)                removing `math shift' on input line 318.
+
+
+
+[9
+
+]
 
 [10
 
 ]
-第4章
+第5章
+
+Package hyperref Warning: Token not allowed in a PDF string (Unicode):
+(hyperref)                removing `math shift' on input line 326.
+
+
+Package hyperref Warning: Token not allowed in a PDF string (Unicode):
+(hyperref)                removing `math shift' on input line 326.
+
+
+Package hyperref Warning: Token not allowed in a PDF string (Unicode):
+(hyperref)                removing `math shift' on input line 337.
+
+
+Package hyperref Warning: Token not allowed in a PDF string (Unicode):
+(hyperref)                removing `math shift' on input line 337.
+
 
 
 [11]
 
-[12
-
-]
-第5章
-LaTeX Font Info:    Kanji font shape `JY3/mc/m/it' undefined
-(Font)              No change on input line 326.
-LaTeX Font Info:    Kanji font shape `JY3/mc/m/it' undefined
-(Font)              No change on input line 331.
-LaTeX Font Info:    Kanji font shape `JY3/mc/m/it' undefined
-(Font)              No change on input line 334.
-LaTeX Font Info:    Kanji font shape `JY3/mc/m/it' undefined
-(Font)              No change on input line 339.
-
-
-[13]
-
-[14
-
-]
+[12]
 第6章
 
 
-[15]
+[13
+
+]
+
+[14]
+第7章
+LaTeX Font Info:    Kanji font shape `JY3/mc/m/it' undefined
+(Font)              No change on input line 378.
+LaTeX Font Info:    Kanji font shape `JY3/mc/m/it' undefined
+(Font)              No change on input line 383.
+LaTeX Font Info:    Kanji font shape `JY3/mc/m/it' undefined
+(Font)              No change on input line 387.
+LaTeX Font Info:    Kanji font shape `JY3/mc/m/it' undefined
+(Font)              No change on input line 392.
+
+
+[15
+
+]
 
 [16
 
 ]
-第7章
+第8章
 
 
 [17]
@@ -1043,7 +1124,7 @@ LaTeX Font Info:    Kanji font shape `JY3/mc/m/it' undefined
 [18
 
 ]
-第8章
+第9章
 
 
 [19]
@@ -1051,7 +1132,7 @@ LaTeX Font Info:    Kanji font shape `JY3/mc/m/it' undefined
 [20
 
 ]
-第9章
+第10章
 
 
 [21]
@@ -1059,7 +1140,7 @@ LaTeX Font Info:    Kanji font shape `JY3/mc/m/it' undefined
 [22
 
 ]
-第10章
+第11章
 
 
 [23]
@@ -1069,59 +1150,59 @@ LaTeX Font Info:    Kanji font shape `JY3/mc/m/it' undefined
 ]
 付録A
 LaTeX Font Info:    Font shape `JT3/mc/m/n' will be
-(Font)              scaled to size 9.98686pt on input line 409.
+(Font)              scaled to size 9.98686pt on input line 439.
 LaTeX Font Info:    Font shape `JY3/mc/m/n' will be
-(Font)              scaled to size 9.98686pt on input line 409.
+(Font)              scaled to size 9.98686pt on input line 439.
 Removing  `ltj.process_input_buffer' from `process_input_buffer'.
 Inserting `ltj.listings_unicode' in `process_input_buffer'.
 Inserting `ltj.process_input_buffer' in `process_input_buffer'.(load cache: extr
 a_lmmono10-italic.luc)
 LaTeX Font Info:    Kanji font shape `JY3/mc/m/it' undefined
-(Font)              No change on input line 410.
+(Font)              No change on input line 440.
 LaTeX Font Info:    Kanji font shape `JY3/mc/m/it' undefined
-(Font)              No change on input line 410.
+(Font)              No change on input line 440.
 LaTeX Font Info:    Kanji font shape `JY3/mc/m/it' undefined
-(Font)              No change on input line 410.
+(Font)              No change on input line 440.
 LaTeX Font Info:    Kanji font shape `JY3/mc/m/it' undefined
-(Font)              No change on input line 410.
+(Font)              No change on input line 440.
 LaTeX Font Info:    Kanji font shape `JY3/mc/m/it' undefined
-(Font)              No change on input line 410.
+(Font)              No change on input line 440.
 LaTeX Font Info:    Kanji font shape `JY3/mc/m/it' undefined
-(Font)              No change on input line 410.
+(Font)              No change on input line 440.
 LaTeX Font Info:    Kanji font shape `JY3/mc/m/it' undefined
-(Font)              No change on input line 410.
+(Font)              No change on input line 440.
 LaTeX Font Info:    Kanji font shape `JY3/mc/m/it' undefined
-(Font)              No change on input line 410.
+(Font)              No change on input line 440.
 LaTeX Font Info:    Kanji font shape `JY3/mc/m/it' undefined
-(Font)              No change on input line 410.
+(Font)              No change on input line 440.
 LaTeX Font Info:    Kanji font shape `JY3/mc/m/it' undefined
-(Font)              No change on input line 410.
+(Font)              No change on input line 440.
 LaTeX Font Info:    Kanji font shape `JY3/mc/m/it' undefined
-(Font)              No change on input line 410.
+(Font)              No change on input line 440.
 LaTeX Font Info:    Kanji font shape `JY3/mc/m/it' undefined
-(Font)              No change on input line 411.
+(Font)              No change on input line 441.
 LaTeX Font Info:    Kanji font shape `JY3/mc/m/it' undefined
-(Font)              No change on input line 411.
+(Font)              No change on input line 441.
 LaTeX Font Info:    Kanji font shape `JY3/mc/m/it' undefined
-(Font)              No change on input line 411.
+(Font)              No change on input line 441.
 LaTeX Font Info:    Kanji font shape `JY3/mc/m/it' undefined
-(Font)              No change on input line 411.
+(Font)              No change on input line 441.
 LaTeX Font Info:    Kanji font shape `JY3/mc/m/it' undefined
-(Font)              No change on input line 411.
+(Font)              No change on input line 441.
 LaTeX Font Info:    Kanji font shape `JY3/mc/m/it' undefined
-(Font)              No change on input line 411.
+(Font)              No change on input line 441.
 LaTeX Font Info:    Kanji font shape `JY3/mc/m/it' undefined
-(Font)              No change on input line 411.
+(Font)              No change on input line 441.
 LaTeX Font Info:    Kanji font shape `JY3/mc/m/it' undefined
-(Font)              No change on input line 411.
+(Font)              No change on input line 441.
 LaTeX Font Info:    Kanji font shape `JY3/mc/m/it' undefined
-(Font)              No change on input line 411.
+(Font)              No change on input line 441.
 LaTeX Font Info:    Kanji font shape `JY3/mc/m/it' undefined
-(Font)              No change on input line 412.
+(Font)              No change on input line 442.
 LaTeX Font Info:    Kanji font shape `JY3/mc/m/it' undefined
-(Font)              No change on input line 412.
+(Font)              No change on input line 442.
 LaTeX Font Info:    Kanji font shape `JY3/mc/m/it' undefined
-(Font)              No change on input line 412.
+(Font)              No change on input line 442.
 Removing  `ltj.listings_unicode' from `process_input_buffer'.
 
 [25]
@@ -1153,19 +1234,15 @@ Removing  `ltj.listings_unicode' from `process_input_buffer'.
 [32
 
 ]
-
-[33]
-
-[34
-
-]
 LaTeX Font Info:    Font shape `JT3/gt/m/n' will be
-(Font)              scaled to size 11.09653pt on input line 431.
+(Font)              scaled to size 11.09653pt on input line 458.
 LaTeX Font Info:    Kanji font shape `JY3/gt/m/it' undefined
-(Font)              No change on input line 431.
+(Font)              No change on input line 458.
+LaTeX Font Info:    Kanji font shape `JY3/gt/m/it' undefined
+(Font)              No change on input line 460.
 
 
-[35] (./graduation_paper.aux)
+[33] (./graduation_paper.aux)
  ***********
 LaTeX2e <2024-11-01> patch level 2
 L3 programming layer <2025-01-18>
@@ -1173,24 +1250,24 @@ L3 programming layer <2025-01-18>
 )
 
 Here is how much of LuaTeX's memory you used:
- 16645 strings out of 475506
+ 16696 strings out of 475506
  125244,794899 words of node,token memory allocated
- 1262 words of node memory still in use:
-   10 hlist, 2 vlist, 5 rule, 2 glue, 4 kern, 1 glyph, 289 attribute, 59 glue_sp
-ec, 37 attribute_list, 1 write, 13 user_defined nodes
-   avail lists: 1:19,2:35193,3:443,4:1076,5:873,6:91,7:3715,8:54,9:1634,10:23,11
+ 1316 words of node memory still in use:
+   10 hlist, 2 vlist, 5 rule, 2 glue, 4 kern, 1 glyph, 313 attribute, 59 glue_sp
+ec, 40 attribute_list, 1 write, 13 user_defined nodes
+   avail lists: 1:19,2:31317,3:420,4:1076,5:873,6:86,7:3517,8:39,9:1634,10:23,11
 :48
- 39187 multiletter control sequences out of 65536+600000
- 85 fonts using 54671951 bytes
- 110i,15n,115p,1839b,691s stack positions out of 10000i,1000n,20000p,200000b,200000s
+ 39239 multiletter control sequences out of 65536+600000
+ 134 fonts using 72595967 bytes
+ 110i,15n,115p,1839b,689s stack positions out of 10000i,1000n,20000p,200000b,200000s
 </usr/local/texlive/2025/texmf-dist/fonts/opentype/public/lm/lmmono10-italic.otf
-></usr/local/texlive/2025/texmf-dist/fonts/opentype/public/lm/lmmono10-regular.o
-tf></usr/local/texlive/2025/texmf-dist/fonts/opentype/public/lm/lmroman10-italic
+></usr/local/texlive/2025/texmf-dist/fonts/opentype/public/lm/lmroman10-italic.o
+tf></usr/local/texlive/2025/texmf-dist/fonts/opentype/public/lm/lmmono10-regular
 .otf></usr/local/texlive/2025/texmf-dist/fonts/opentype/public/haranoaji/HaranoA
 jiGothic-Medium.otf></usr/local/texlive/2025/texmf-dist/fonts/opentype/public/lm
 /lmsans12-regular.otf></usr/local/texlive/2025/texmf-dist/fonts/opentype/public/
-lm/lmsans10-regular.otf></usr/local/texlive/2025/texmf-dist/fonts/opentype/publi
-c/lm/lmroman10-regular.otf></usr/local/texlive/2025/texmf-dist/fonts/opentype/pu
+lm/lmroman10-regular.otf></usr/local/texlive/2025/texmf-dist/fonts/opentype/publ
+ic/lm/lmsans10-regular.otf></usr/local/texlive/2025/texmf-dist/fonts/opentype/pu
 blic/lm/lmroman10-bold.otf></usr/local/texlive/2025/texmf-dist/fonts/opentype/pu
 blic/lm/lmroman12-regular.otf></usr/local/texlive/2025/texmf-dist/fonts/opentype
 /public/lm/lmroman17-regular.otf></usr/local/texlive/2025/texmf-dist/fonts/opent
@@ -1199,15 +1276,18 @@ ntype/public/haranoaji/HaranoAjiMincho-Regular.otf></usr/local/texlive/2025/texm
 f-dist/fonts/type1/public/amsfonts/cm/cmbx10.pfb></usr/local/texlive/2025/texmf-
 dist/fonts/type1/public/amsfonts/cm/cmex10.pfb></usr/local/texlive/2025/texmf-di
 st/fonts/type1/public/amsfonts/cm/cmmi10.pfb></usr/local/texlive/2025/texmf-dist
-/fonts/type1/public/amsfonts/cm/cmmi7.pfb></usr/local/texlive/2025/texmf-dist/fo
-nts/type1/public/amsfonts/cm/cmr10.pfb></usr/local/texlive/2025/texmf-dist/fonts
-/type1/public/amsfonts/cm/cmr7.pfb></usr/local/texlive/2025/texmf-dist/fonts/typ
-e1/public/amsfonts/cm/cmsy10.pfb></usr/local/texlive/2025/texmf-dist/fonts/type1
-/public/amsfonts/symbols/msbm10.pfb>
-Output written on graduation_paper.pdf (43 pages, 239536 bytes).
+/fonts/type1/public/amsfonts/cm/cmmi12.pfb></usr/local/texlive/2025/texmf-dist/f
+onts/type1/public/amsfonts/cm/cmmi7.pfb></usr/local/texlive/2025/texmf-dist/font
+s/type1/public/amsfonts/cm/cmr10.pfb></usr/local/texlive/2025/texmf-dist/fonts/t
+ype1/public/amsfonts/cm/cmr12.pfb></usr/local/texlive/2025/texmf-dist/fonts/type
+1/public/amsfonts/cm/cmr17.pfb></usr/local/texlive/2025/texmf-dist/fonts/type1/p
+ublic/amsfonts/cm/cmr7.pfb></usr/local/texlive/2025/texmf-dist/fonts/type1/publi
+c/amsfonts/cm/cmsy10.pfb></usr/local/texlive/2025/texmf-dist/fonts/type1/public/
+amsfonts/symbols/msbm10.pfb>
+Output written on graduation_paper.pdf (41 pages, 277919 bytes).
 
-PDF statistics: 610 PDF objects out of 1000 (max. 8388607)
+PDF statistics: 611 PDF objects out of 1000 (max. 8388607)
  515 compressed objects within 6 object streams
- 121 named destinations out of 1000 (max. 131072)
- 433 words of extra memory for PDF output out of 10000 (max. 100000000)
+ 120 named destinations out of 1000 (max. 131072)
+ 425 words of extra memory for PDF output out of 10000 (max. 100000000)
 

@@ -1,0 +1,42 @@
+# API Keys and Secrets
+.env
+.env.local
+*.key
+config.json
+secrets.json
+
+# Build files
+build/
+*.aux
+*.log
+*.out
+*.toc
+*.lof
+*.lot
+*.fdb_latexmk
+*.fls
+*.synctex.gz
+*.dvi
+*.out.ps
+
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+venv/
+env/
+ENV/
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# OS
+.DS_Store
+Thumbs.db
+
