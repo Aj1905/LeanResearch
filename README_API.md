@@ -2,31 +2,40 @@
 
 ## セットアップ
 
-### 1. Pythonパッケージのインストール
+### 1. Aristotle CLIのインストール
+
+pipxを使用してインストールします：
 
 ```bash
-pip install -r requirements.txt
+# pipxをインストール（初回のみ）
+brew install pipx
+
+# pipxのパスを設定（初回のみ、シェルの設定ファイルに追加）
+pipx ensurepath
+
+# aristotlelibをインストール
+pipx install aristotlelib
 ```
 
-### 2. APIキーの設定
+**注意**: 新しいターミナルを開くか、`source ~/.zshrc`（または`source ~/.bashrc`）を実行して、`pipx ensurepath`の変更を反映してください。
+
+### 2. Pythonパッケージのインストール
+
+その他の依存パッケージをインストールします：
+
+```bash
+pip3 install --user --break-system-packages -r requirements.txt
+```
+
+**注意**: Python 3.13以降では、`externally-managed-environment`エラーを回避するために`--break-system-packages`フラグが必要です。このフラグはシステムのPython環境保護を無効化しますが、`--user`フラグと併用することで、ユーザー領域にインストールされます。
+
+### 3. APIキーの設定
 
 セットアップスクリプトを実行して`.env`ファイルを作成します：
 
 ```bash
 ./setup_api.sh
 ```
-
-または、手動で`.env`ファイルを作成することもできます：
-
-```bash
-# テンプレートからコピー
-cp env.template .env
-
-# .envファイルを編集してAPIキーを設定
-# ARISTOTLE_API_KEY=arstl_BbL7ymjn_Sl8Wx4Eey3QCT4bGLrawbIZyeTG5cEQ-Z8
-```
-
-`.env`ファイルは`.gitignore`に含まれているため、Gitにコミットされません。
 
 必要に応じて、環境変数としても設定できます：
 
@@ -36,87 +45,148 @@ export ARISTOTLE_API_KEY=arstl_BbL7ymjn_Sl8Wx4Eey3QCT4bGLrawbIZyeTG5cEQ-Z8
 
 ## 使用方法
 
-### Lean 4から直接使用（推奨）
+`aristotle_api.py`は、Aristotle CLIのラッパースクリプトです。公式CLI/SDKの仕様に追従するため、壊れにくい設計になっています。
 
-Lean 4プロジェクト内から直接APIを呼び出すことができます：
+### 1. sorry補填（Leanファイルを投げる）
 
-```lean
-import PrFiles.AristotleAPI
-
--- API接続をテスト
-#eval AristotleAPI.testConnection
-
--- GETリクエストの例
-#eval do
-  let result ← AristotleAPI.get "/v1/endpoint"
-  IO.println result.pretty
-
--- POSTリクエストの例
-#eval do
-  let data := Json.mkObj [("key", "value")]
-  let result ← AristotleAPI.post "/v1/endpoint" data
-  IO.println result.pretty
-```
-
-**注意**: 環境変数`ARISTOTLE_API_KEY`が設定されている必要があります：
-```bash
-export ARISTOTLE_API_KEY=arstl_BbL7ymjn_Sl8Wx4Eey3QCT4bGLrawbIZyeTG5cEQ-Z8
-```
-
-### Pythonスクリプトから使用
-
-```python
-from aristotle_api import AristotleAPI
-
-# APIクライアントを初期化
-api = AristotleAPI()
-
-# GETリクエストの例
-result = api.get('/v1/endpoint')
-
-# POSTリクエストの例
-data = {'key': 'value'}
-result = api.post('/v1/endpoint', data=data)
-```
-
-### コマンドラインから使用
+Leanファイル内の`sorry`を自動で埋めます：
 
 ```bash
-python aristotle_api.py
+python aristotle_api.py fill-sorry --input path/to/theorem.lean --output solution.lean
 ```
+
+**例:**
+```bash
+# PrFiles/Ceva.leanのsorryを埋める
+python aristotle_api.py fill-sorry --input PrFiles/Ceva.lean --output PrFiles/Ceva_filled.lean
+```
+
+### 2. 自然言語証明の形式化
+
+自然言語で書かれた証明（txt等）をLean形式に変換します：
+
+```bash
+python aristotle_api.py formalize --input path/to/problem.txt --output solution.lean
+```
+
+**例:**
+```bash
+# 自然言語証明を形式化
+python aristotle_api.py formalize --input proof.txt --output formalized_proof.lean
+```
+
+### 3. TUI（対話型インターフェース）
+
+対話形式で質問や探索を行います：
+
+```bash
+python aristotle_api.py tui
+```
+
+**注意**: TUIモードは現在`capture_output`で実行されているため、実際の対話には制限があります。実運用では別実装を検討してください。
+
+### コマンドライン引数の詳細
+
+- `fill-sorry`: Leanファイルを投げてsorryを埋める（`prove-from-file`コマンドを使用）
+  - `--input`: 入力Leanファイルパス（必須）
+  - `--output`: 出力先.leanファイルパス（任意）
+
+- `formalize`: 自然言語（txt等）を形式化（`--informal`フラグ付きで`prove-from-file`を使用）
+  - `--input`: 自然言語証明のファイルパス（必須）
+  - `--output`: 出力先.leanファイルパス（任意）
+
+- `tui`: TUIを開く（対話で質問・探索）
+
+## アーキテクチャ
+
+このスクリプトは以下の設計思想に基づいています：
+
+- **公式CLI/SDKの使用**: REST APIを直接実装せず、公式の`aristotle` CLIコマンドをsubprocess経由で実行します
+- **壊れにくい設計**: 公式の仕様変更に追従しやすく、メンテナンスが容易です
+- **環境変数の注入**: APIキーは環境変数として`aristotle` CLIに渡されます
 
 ## セキュリティ
 
-- **APIキーは絶対にGitにコミットしないでください**
-- `.env`ファイルは既に`.gitignore`に含まれています
 - 本番環境では、環境変数やシークレット管理サービスを使用してください
-
-## APIエンドポイント
-
-実際のAPIエンドポイントURLは以下のファイルで更新してください：
-- Lean 4: `PrFiles/AristotleAPI.lean`の`baseUrl`
-- Python: `aristotle_api.py`の`ARISTOTLE_API_BASE_URL`
-
-現在の設定: `https://api.aristotle.ai`
-
-## なぜ2つの実装があるのか？
-
-- **Lean 4実装** (`PrFiles/AristotleAPI.lean`): Leanプロジェクト内から直接APIを呼び出せます。定理証明や形式化のワークフローに統合しやすいです。
-- **Python実装** (`aristotle_api.py`): より柔軟で、豊富なライブラリを活用できます。スクリプトやツールとして使用する場合に便利です。
-
-どちらを使用しても構いませんが、Lean研究プロジェクトでは**Lean 4実装を推奨**します。
 
 ## トラブルシューティング
 
+### `aristotle`コマンドが見つからないエラー
+
+```
+AristotleCliError: aristotle コマンドが見つかりません。まず `pip install aristotlelib` を実行してください。
+```
+
+**解決方法:**
+```bash
+# pipxを使用してインストール
+brew install pipx
+pipx ensurepath
+pipx install aristotlelib
+
+# 新しいターミナルを開くか、以下を実行
+source ~/.zshrc  # または source ~/.bashrc
+```
+
 ### APIキーが見つからないエラー
 
+```
+ValueError: APIキーが設定されていません。.env に ARISTOTLE_API_KEY=... を設定してください。
+```
+
+**解決方法:**
 1. `.env`ファイルが存在することを確認
 2. `.env`ファイルに`ARISTOTLE_API_KEY`が設定されていることを確認
 3. 環境変数として設定されている場合は、`echo $ARISTOTLE_API_KEY`で確認
 
-### 接続エラー
+### 入力ファイルが見つからないエラー
 
-1. インターネット接続を確認
-2. APIのベースURLが正しいか確認
-3. APIキーが有効か確認
+```
+FileNotFoundError: 入力ファイルが見つかりません: path/to/file.lean
+```
+
+**解決方法:**
+- `--input`で指定したファイルパスが正しいか確認
+- ファイルが存在するか確認
+- 相対パスと絶対パスの違いに注意
+
+**解決方法: pipxを使用（推奨）**
+
+```bash
+# pipxをインストール
+brew install pipx
+pipx ensurepath
+
+# aristotlelibをインストール
+pipx install aristotlelib
+
+# 新しいターミナルを開くか、以下を実行
+source ~/.zshrc  # または source ~/.bashrc
+```
+
+**別の方法: --userフラグと--break-system-packagesフラグを使用**
+
+```bash
+# Python 3.13以降では --break-system-packages が必要
+pip3 install --user --break-system-packages aristotlelib
+pip3 install --user --break-system-packages -r requirements.txt
+```
+
+### `pip`コマンドが見つからないエラー
+
+macOSでは、`pip`の代わりに`pip3`を使用してください：
+
+```bash
+# エラー: zsh: command not found: pip
+# 解決方法: pipxを使用（推奨）
+brew install pipx
+pipx install aristotlelib
+
+# または、pip3を使用（--break-system-packagesフラグが必要）
+pip3 install --user --break-system-packages -r requirements.txt
+```
+
+### その他のエラー
+
+- `aristotle` CLIのエラーメッセージが`stderr`に出力されます
 

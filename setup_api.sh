@@ -41,3 +41,4 @@ echo "  2. API接続をテスト: python aristotle_api.py"
 echo ""
 echo "注意: .envファイルは既に.gitignoreに含まれているため、Gitにコミットされません。"
 
+

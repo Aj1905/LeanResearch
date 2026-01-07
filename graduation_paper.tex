@@ -72,407 +72,557 @@
 \date{$2026$/$1$/$9$}
 
 \begin{document}
-\maketitle
-
-\frontmatter
-\addchaptertotoc{要旨}
-本研究は、$2$次元の古典的チェバの定理を出発点として、$n$次元アフィン空間における適切な一般化およびその逆を定式化し、
-\Lean/\mathlib 4上での形式化を目標とする。
-主な貢献は以下である。
-\begin{itemize}[leftmargin=2em]
-  \item （数学）$n$次元アフィン空間でのチェバ型定理とその逆の明確なステートメント。
-  \item （形式化）既存の \mathlib 4の構造を調査し、再利用可能部分と不足部分を切り分ける設計指針。
-  \item （実装）不足する補題・定義をモジュール化して追加し、主定理の機械検証を通す。
-\end{itemize}
-
-\tableofcontents
-
-\mainmatter
-
-% =========================================================
-\chapter{序論}
-\section{研究背景と動機}
-近年の生成AIは、言語モデルに推論能力を付与する工夫や、計算ツール・検証器との連携によって急速に性能を向上させている。
-特に$2025$年には、複数のAIモデルが国際数学オリンピック（IMO）の問題セットに対して
-金メダル基準（gold-medal standard）に相当する得点を達成したと報告された\cite{DeepMindIMO2025}。
-
-一方で、自然言語のみで推論するLLMは、もっともらしいが誤りを含む出力（ハルシネーション）を生成しうる。
-定理証明器（例：\Lean）を統合した枠組みでは、自然言語の解法案を全部または部分的に形式化して検証し、
-失敗時はフィードバックによる修正ループを回せる。
-そのため、形式検証が及ぶ範囲についてはハルシネーションを大幅に抑制でき、結果として出力全体に対するハルシネーションの頻度も抑えられる。
-ただし、問題文の形式化や自然言語への説明生成には依然として誤りが入りうる。
-よって、「形式検証の及ぶ範囲を拡大する」、「問題文の形式化精度を向上させる」ことで生成AIの数学力は向上すると考えられる。
-
-\section{本研究の目的}
-本研究の目的は、チェバの定理の高次元一般化およびその逆を \Lean/\mathlib 4に追加可能な形で整備し、
-生成AIの数学力向上に寄与する基盤を拡充することである。
-
-\section{本研究の貢献}
-\begin{itemize}[leftmargin=2em]
-  \item チェバの定理の高次元一般化の候補を「数学的自然さ」「形式化コスト」「再利用性」の観点で比較し、\mathlib 4に適した版を選定する。
-  \item 選定した版について、自然言語証明を整理し、\Lean への翻訳方針（依存関係・不足補題）を明確化する。
-  \item 不足する補助ライブラリをモジュールとして実装し、主定理とその逆を機械検証する。
-\end{itemize}
-
-\section{本論文の構成}
-第$2$章で以降に登場する数学的概念を定義し、第$3$章で$2$次元チェバとアフィン性を整理する。
-第$4$章でどのような一般化が考えられるかを述べ、第$5$章で先行プロジェクトを紹介する。
-第$6$章で \mathlib 4へ導入する一般化を選定し、第$7$章で数学的証明を与える。
-第$8$章以降で形式化の詳細、再利用可能性、追加ライブラリ設計、応用例を述べる。
-
-% =========================================================
-\chapter{概念の紹介}
-本章では、形式化の基礎となる型理論の簡単な概念および本論文の以降の章で登場する数学的概念を定義する。
-チェバの定理の高次元一般化を理解し、形式化するために必要不可欠なものを洗練した。
-
-\section{型理論の簡単な概念}
-
-\subsection{型}
-\begin{definition}[型]
-型は、値の集合に対して定義される操作を提供する。
-\end{definition}
-
-\subsection{型クラス}
-\begin{definition}[型クラス]
-型クラスは、型の集合に対して定義される操作を提供する。
-\end{definition}
-
-\subsection{インスタンス}
-\begin{definition}[インスタンス]
-インスタンスは、型クラスに対して定義される操作を提供する。
-\end{definition}
-
-\section{証明の道具}
-\subsection{アフィン空間}
-\begin{definition}[アフィン空間]
-体$k$上のベクトル空間$V$に対して、集合$P$が$V$上のアフィン空間であるとは、
-以下の条件を満たす写像$+ : P \times V \to P$（点とベクトルの和）が存在することである：
-\begin{itemize}[leftmargin=2em]
-  \item 任意の$p \in P$に対して、$p + \mathbf{0} = p$（$\mathbf{0}$は$V$の零ベクトル）
-  \item 任意の$p \in P$と$v, w \in V$に対して、$(p + v) + w = p + (v + w)$
-  \item 任意の$p, q \in P$に対して、$p + (q - p) = q$を満たすベクトル$q - p \in V$が一意に存在する
-\end{itemize}
-\end{definition}
-
-\mathlib 4では、\texttt{AffineSpace V P}という型クラスがこの構造を提供する。
-ここで、\texttt{V}はベクトル空間、\texttt{P}は点の型である。
-
-\subsection{アフィン写像}
-\begin{definition}[アフィン写像]
-アフィン空間$P_1$（ベクトル空間$V_1$上）からアフィン空間$P_2$（ベクトル空間$V_2$上）への
-アフィン写像とは、線形写像$L: V_1 \to V_2$と点$b \in P_2$が存在して、
-任意の$p \in P_1$に対して
-\[
-f(p) = L(p - p_0) + b
-\]
-と表される写像$f: P_1 \to P_2$である（$p_0$は$P_1$の任意の基点）。
-\end{definition}
-
-\mathlib 4では、\texttt{AffineMap k P₁ P₂}がアフィン写像の型として定義されている。
-アフィン写像は平行性と比を保つ変換である。
-
-\subsection{重心座標}
-\begin{definition}[重心座標]
-アフィン空間$P$上の$n+1$個の点$p_0, p_1, \ldots, p_n$がアフィン独立であるとき、
-任意の点$p \in P$は
-\[
-p = \sum_{i=0}^{n} \lambda_i p_i, \quad \sum_{i=0}^{n} \lambda_i = 1
-\]
-と一意に表される。このとき、$(\lambda_0, \lambda_1, \ldots, \lambda_n)$を
-$p$の$p_0, p_1, \ldots, p_n$に関する重心座標（barycentric coordinates）という。
-\end{definition}
-
-三角形$\triangle ABC$の場合、任意の点$P$は$P = \alpha A + \beta B + \gamma C$（$\alpha + \beta + \gamma = 1$）
-と表され、$(\alpha, \beta, \gamma)$が$P$の重心座標である。
-
-\subsection{共点性}
-\begin{definition}[共点する]
-有限個の直線または線分が$1$点で交わるとき、それらは共点するという。
-\end{definition}
-
-\mathlib 4では、\texttt{Finset.affineCombination}や関連する補題が重心座標の計算をサポートする。
-
-\subsection{単体}
-\begin{definition}[単体]
-$n+1$個のアフィン独立な点$p_0, p_1, \ldots, p_n$を含むアフィン空間$P$において、
-これらの点の凸包を$n$-単体という。
-すなわち、$n$-単体は
-\[
-\left\{ \sum_{i=0}^{n} \lambda_i p_i \middle| \lambda_i \geq 0, \sum_{i=0}^{n} \lambda_i = 1 \right\}
-\]
-で定義される。
-\end{definition}
-
-\subsection{面}
-\begin{definition}[面]
-$n$-単体$S$の頂点集合の部分集合$F$に対して、
-$F$の要素の凸包を$S$の面という。
-特に、$k+1$個の頂点からなる面を$k$-面という。
-\end{definition}
-
-三角形（$2$単体）の場合、$0$-面は頂点、$1$-面は辺、$2$-面は三角形全体である。
-
-\begin{definition}[対向する]
-$n$-単体$S$の頂点$v$に対して、$v$を含まない$n-1$-面を$v$の対向面（opposite face）という。
-また、$S$の頂点$v$と面$F$について、$F$が$v$の対向面であるとき、$F$は$v$に対向する（opposite to $v$）という。
-\end{definition}
-
-例えば、三角形$\triangle ABC$において、頂点$A$の対向面は辺$BC$である。
-$n$-単体の各頂点に対し、その頂点を含まない$n-1$-面が対向面として一意に定まる。
-
-\subsection{チェビアン}
-\begin{definition}[チェビアン（$2$次元）]
-三角形$\triangle ABC$において、頂点$A$と対辺$BC$上の点$D$を結ぶ直線$AD$を、
-頂点$A$から引いたチェビアン（cevian）という。
-同様に、$BE$（$E$は辺$CA$上）、$CF$（$F$は辺$AB$上）もチェビアンである。
-\end{definition}
-
-チェバの定理は、$3$本のチェビアンが$1$点で交わる条件を与える定理である。
-
-\subsection{チェビアンの足}
-\begin{definition}[チェビアンの足]
-三角形$\triangle ABC$において、頂点$A$から引いたチェビアン$AD$と対辺$BC$の交点$D$を、
-チェビアン$AD$の足（foot）という。
-同様に、$E$はチェビアン$BE$の足、$F$はチェビアン$CF$の足である。
-\end{definition}
-
-チェバの定理では、各辺上の点$D, E, F$がチェビアンの足として機能する。
-形式化においては、これらの点が適切な辺上にあることを保証する条件が必要となる。
-
-三角形は$2$-単体、四面体は$3$-単体の例である。
-\mathlib 4では、\texttt{Geometry.Euclidean.Simplex}モジュールに単体の定義が存在する。
-
-チェバの定理は、複数のチェビアンが共点であるための条件を与える定理である。
-
-% =========================================================
-\chapter{チェバの定理($2$次元)とアフィン性}
-\section{チェバの定理($2$次元)の主張}
-
-\begin{theorem}[チェバの定理（$2$次元）]
-三角形$\triangle ABC$の各辺$BC, CA, AB$またはその延長線上にそれぞれ点$D, E, F$をとる（頂点とは異なる）。
-このとき、$3$直線$AD, BE, CF$が$1$点で交わるための必要十分条件は、
-\[
-\frac{BD}{DC} \cdot \frac{CE}{EA} \cdot \frac{AF}{FB} = 1
-\]
-が成り立つことである。
-\end{theorem}
-
-\section{チェバの定理がアフィンな結果であること}
-チェバの定理の主張には、一見すると線分の長さ（$BD, DC$など）が現れるため、
-ユークリッド幾何に依存する定理のように見えるかもしれない。
-しかし、実際には定理の条件は線分の長さの比$\frac{BD}{DC}$のみで記述されており、
-これらの比はアフィン変換で不変である。したがって、チェバの定理は本質的にアフィン幾何の結果である。
-この結果は\mathlib 4のどのライブラリにファイルを追加するかを決定する際に重要となる。
-
-\subsection{アフィン変換と比の不変性}
-アフィン変換とは、平行性と比を保つ変換である。
-より正確には、アフィン空間$\mathbb{R}^n$上の変換$\varphi: \mathbb{R}^n \to \mathbb{R}^n$が
-$\varphi(x) = Ax + b$（$A$は正則行列、$b$はベクトル）の形で表されるとき、$\varphi$をアフィン変換という。
-
-アフィン変換の重要な性質として、同一直線上にある$3$点$P, Q, R$（$Q$は$P$と$R$の間）に対して、
-比$\frac{PQ}{QR}$はアフィン変換で不変である：
-\[
-\frac{\overrightarrow{PQ}}{\overrightarrow{QR}} = \frac{\overrightarrow{\varphi(P)\varphi(Q)}}{\overrightarrow{\varphi(Q)\varphi(R)}}
-\]
-これは、アフィン変換が線形変換と平行移動の合成であり、線形変換がベクトルの比を保つことから従う。
-
-\subsection{重心座標による説明}
-三角形$\triangle ABC$内の任意の点$P$は、重心座標（barycentric coordinates）を用いて
-\[
-P = \alpha A + \beta B + \gamma C, \quad \alpha + \beta + \gamma = 1
-\]
-と一意に表される。ここで、$\alpha, \beta, \gamma$は実数である。
-
-辺$BC$上の点$D$は、$D = (1-t)B + tC$（$t \in \mathbb{R}$）と表せる。
-このとき、有向比は
-\[
-\frac{BD}{DC} = \frac{t}{1-t}
-\]
-となる。同様に、$E = (1-u)C + uA$、$F = (1-v)A + vB$とすると、
-\[
-\frac{CE}{EA} = \frac{u}{1-u}, \quad \frac{AF}{FB} = \frac{v}{1-v}
-\]
-である。
-
-$3$直線$AD, BE, CF$が$1$点$P$で交わることは、$P$の重心座標が
-\[
-P = \frac{\alpha A + \beta B + \gamma C}{\alpha + \beta + \gamma}
-\]
-と表され、かつ$P$が各辺上にあることと同値である。
-この条件は、重心座標の比のみで記述され、ユークリッド距離には依存しない。
-
-\subsection{アフィン同値性}
-以上の考察から、チェバの定理は以下の意味でアフィンな結果であることがわかる：
-\begin{itemize}[leftmargin=2em]
-  \item 定理の条件（比の積=1）は、アフィン変換で不変な量（比）のみで記述されている。
-  \item 定理の結論（$3$直線の共点性）も、アフィン変換で保存される性質である。
-  \item したがって、任意のアフィン変換を施しても、チェバの定理の真偽は変わらない。
-\end{itemize}
-
-以上より、チェバの定理はユークリッド距離や角度に依存せず、
-アフィン構造（平行性、比、共線性）のみに基づく定理であることが示された。
-
-% =========================================================
-\chapter{高次元への一般化の候補}
-\section{一般化の設計空間}
-$2$次元のチェバの定理を非公式に表現すれば、「三角形の頂点から対辺に線分を下ろした時の共点する条件」についての定理と言える。
-言い換えると、「$2$-単体の各頂点から対向する$1$次元面に$1$次元のチェビアンを下ろした時の共点する条件」についての定理と言える。
-自然数が現れる箇所の扱い次第で一般化にバリエーションが存在する。
-
-\section{候補A：周囲空間のみ高次元化}
-$n$次元アフィン空間に$2$次元の三角形を埋め込み、周囲空間のみ高次元化する。
-$2$-単体の各頂点から対向する$1$-面に$1$-チェビアンを下ろした時の（$n$次元空間内の）共点する条件についての定理。
-定理の主張自体は大きく変わらない。
-
-\section{候補B：$n$単体版,solopede,1-チェビアン}
-$n$-単体の各頂点から対向する$n-1$-面への$1$-チェビアンを下ろした時の共点する条件についての定理。
-
-\section{候補D：$n$単体版,solopede,2-チェビアン}
-$n$-単体の各頂点から対向する$n-1$-面への$2$-チェビアンを下ろした時の共点する条件についての定理。
-
-\section{候補C：$n$単体版,multipede}
-$n$-単体の各頂点から対向する$k$-面（$1 \leq k \leq n-1$）への$1$-チェビアンを下ろした時の共点する条件についての定理。
-
-第$6$章で詳細な比較を行う。
-
-% =========================================================
-\chapter{先行プロジェクトの紹介}
-過去にいくつかチェバの定理の形式化に関する先行研究があったので紹介する.
-\section{Lean$3$時代の形式化}
-期間: $2021$年$12$月 〜 $2023$年$7$月\\
-GitHub: https://github.com/leanprover-community/mathlib3/pull/10632\\
-\section{Aristotle.AI（Harmonic社）を用いた形式化}
-期間: $2025$年$12$月 〜 $2026$年$1$月\\
-GitHub: https://github.com/leanprover-community/mathlib4/pull/33388\\
-
-Boris Alexeev氏による試み。
-Harmonic社が提供するLeanプログラム用のAIサービスAristotle.AIを用いて形式化した。
-全てのコードがLeanの機械検証を通過し、安全性が保証された。
-しかし、$2$次元のチェバの定理のみを形式化しており、高次元への一般化は行われていなかったため、\mathlib 4に追加するには一般性が足りないとして採用されなかった。
-\section{$n$次元アフィン空間に一般化された初の形式化}
-期間: $2026$年$1$月 〜 現在\\
-GitHub: https://github.com/leanprover-community/mathlib4/pull/33409\\
-
-Joseph Myers氏による試み。
-過去の不十分な事例を踏まえて、$n$次元アフィン空間に一般化されたチェバの定理を形式化した。
-おそらく現時点で最も一般性が高い形式化であり、\mathlib 4に追加する最適な候補であると考えられる。
-一般化チェバの定理の順方向のみを形式化している。
-現在PRレビュー中。
-% =========================================================
-\chapter{\mathlib 4に加える一般化の選定}
-\section{評価軸}
-\begin{itemize}[leftmargin=2em]
-  \item 数学的自然さ（数学的に自然な一般化であるか）
-  \item 形式化コスト（既存定義・補題の有無）
-  \item 再利用性（他定理への応用のしやすさ）
-\end{itemize}
-
-\section{候補の比較}
-\subsection{候補A：周囲空間のみ高次元化}
-定理の主張が変わらないため、一般化としての価値が低い。
-
-\subsection{候補B：$n$単体版,solopede,1-チェビアン}
-定理の主張が変わらないため、一般化としての価値が低い。
-
-\subsection{候補C：$n$単体版,solopede,2-チェビアン}
-定理の主張が変わらないため、一般化としての価値が低い。
-
-\subsection{候補D：$n$単体版,multipede}
-定理の主張が変わらないため、一般化としての価値が低い。
-
-
-\section{採用する一般化}
-本稿では以降候補Bの一般化を採用する。
-
-% =========================================================
-\chapter{採用した一般化チェバの定理とその逆の自然言語証明}
-
-\section{補題群}
-\subsection{補題1}
-\begin{proof}
-
-\end{proof}
-
-\subsection{補題2}
-\begin{proof}
-
-\end{proof}
-
-\section{主定理}
-\begin{theorem}[チェバの定理]
-% TODO: ここに主定理ステートメント（共点条件 <-> ある積=1 / ある行列式条件）を書く。
-\end{theorem}
-\begin{proof}
-% TODO: 証明（できるだけ線形代数に落として見通しよく）
-\end{proof}
-
-% =========================================================
-\chapter{既存モジュールの転用可能性}
-\section{転用できる部分}
-% TODO: 既存の Affine, LinearAlgebra, simplex 関連を列挙。
-
-\section{不足している部分}
-% TODO: 不足補題、定義、補助APIを列挙。
-
-% =========================================================
-\chapter{追加すべきライブラリと実装上の工夫}
-\section{追加ライブラリ一覧（ファイル／モジュール単位）}
-% TODO: 例: Geometry/Affine/SimplexCeva.lean など
-
-\section{各モジュールの設計方針}
-% TODO: SOLID的に「定義」「補題」「主定理」を分割する方針を明記。
-
-\section{実装の工夫事項・特記事項}
-% TODO: simp lemma 管理、型クラス、ローカル記法、テスト方針。
-
-% =========================================================
-\chapter{本ライブラリで示せる別定理と発展例}
-\section{メネラウスの定理}
-
-
-% =========================================================
-\chapter{結論と今後の展望}
-\section{結論}
-チェバの定理の$n$次元の一般化を「各頂点に対向する$n-1$-面またはその延長上の点を結ぶ$1$次元チェビアンが共点する条件」として定式化。
-既にJoseph Myers氏によって形式化された順方向のチェバの定理に加えて、逆方向のチェバの定理を形式化し、\mathlib 4にPRを提出した。
-
-\section{今後の課題}
-コミュニケーション不足によりチェバの定理の順方向の形式化については、Joseph Myers氏に先行されてしまった。
-今回培ったOSS開発の作法に従い、次回以降のプロジェクトに取り組んでいきたい。
-
-\section{\Lean 普及と形式化研究の展望}
-現在Lean4のAutoformalizationという技術開発が進んでおり、自然言語で記述した数学の証明をそのままLean4の形式言語に書き換えることが目指されている。
-今回は個別の定理を形式化すると言うプロジェクトであったが、この技術を用いればある数学的な証明を自然言語で記述するだけで、立ちどころに形式証明が得られると考えられている。
-この技術は、Lean4研究を飛躍的に促進すると考えられる。個別の定理の形式化だけでなく、このAutoformalizationに関する見識も深めていきたい。
-
-
-
-% =========================================================
-\appendix
-\chapter{付録：主要 \Lean コード抜粋}
-% 例（実際のコードに差し替え）
-\begin{lstlisting}
--- import ...（後で差し替え）
--- theorem ... := by
---   ...
-\end{lstlisting}
-
-\chapter{付録：概念対応表（数学用語 ↔ \Lean の型／定義）}
-% TODO
-
-\chapter{付録：実装ログ（ハマりどころ集）}
-% TODO
-
-\backmatter
-\addchaptertotoc{謝辞}
-% TODO
-
-\begin{thebibliography}{99}
-
-\bibitem{DeepMindIMO2025}
-Google DeepMind, \emph{Advanced version of Gemini with Deep Think officially achieves gold-medal standard at the International Mathematical Olympiad}, 2025.
-\bibitem{multipede}
-Dov Samet, \emph{An Extension of Ceva’s Theorem ton-Simplices}, 2021.
-\end{thebibliography}
+  \maketitle
+
+  \frontmatter
+  \addchaptertotoc{要旨}
+  本研究は、$2$次元の古典的チェバの定理を出発点として、$n$次元アフィン空間における適切な一般化およびその逆を定式化し、
+  \Lean/\mathlib 4上での形式化を目標とする。
+  主な貢献は以下である。
+  \begin{itemize}[leftmargin=2em]
+    \item $n$次元アフィン空間でのチェバの定理とその逆の定式化の紹介。
+    \item 既存の \mathlib 4の構造を調査し、再利用可能部分と不足部分を切り分ける設計指針。
+    \item 不足する補題・定義をモジュール化して追加し、定理の機械検証を通す。
+  \end{itemize}
+
+  \tableofcontents
+
+  \mainmatter
+
+  % =========================================================
+  \chapter{序論}
+    \section{研究背景と動機}
+      近年の生成AIは、言語モデルに推論能力を付与する工夫や、計算ツール・検証器との連携によって急速に性能を向上させている。
+      特に$2025$年には、複数のAIモデルが国際数学オリンピック（IMO）の問題セットに対して
+      金メダル基準（gold-medal standard）に相当する得点を達成したと報告された\cite{DeepMindIMO2025}。
+
+      一方で、自然言語のみで推論するLLMは、もっともらしいが誤りを含む出力（ハルシネーション）を生成しうる。
+      定理証明器（例：\Lean）を統合した枠組みでは、自然言語の解法案を全部または部分的に形式化して検証し、
+      失敗時はフィードバックによる修正ループを回せる。
+      そのため、形式検証が及ぶ範囲についてはハルシネーションを大幅に抑制でき、結果として出力全体に対するハルシネーションの頻度も抑えられる。
+      ただし、問題文の形式化や自然言語への説明生成には依然として誤りが入りうる。
+      よって、「形式検証の及ぶ範囲を拡大する」、「問題文の形式化精度を向上させる」ことで生成AIの数学力は向上すると考えられる。
+
+    \section{本研究の目的}
+      本研究の目的は、チェバの定理の高次元一般化およびその逆を \Lean/\mathlib 4に追加可能な形で整備し、
+      生成AIの数学力向上に寄与する基盤を拡充することである。
+
+    \section{本研究の貢献}
+      \begin{itemize}[leftmargin=2em]
+        \item チェバの定理の高次元一般化の候補を「数学的自然さ」「形式化コスト」「再利用性」の観点で比較し、\mathlib 4に適した版を選定する。
+        \item 選定した版について、自然言語証明を整理し、\Lean への翻訳方針（依存関係・不足補題）を明確化する。
+        \item 不足する補助ライブラリをモジュールとして実装し、主定理とその逆を機械検証する。
+      \end{itemize}
+
+    \section{本論文の構成}
+      第$2$章で以降に登場する数学的概念を定義し、第$3$章で$2$次元チェバをどのように一般化して\mathlib 4に追加するかを議論する。
+      第$4$章でLeanを用いた実際の実装を議論する。
+
+  % =========================================================
+  \chapter{概念の紹介}
+    本章では、形式化の基礎となる型理論の簡単な概念および本論文の以降の章で登場する数学的概念を定義する。
+    チェバの定理の高次元一般化を理解し、形式化するために必要不可欠なものを洗練した。
+
+    \section{型理論の簡単な概念}
+
+      \subsection{型}
+        \begin{definition}[型]
+
+        \end{definition}
+
+      \subsection{型クラス}
+        \begin{definition}[型クラス]
+          型クラスは、型の集合に対して定義される操作を提供する。
+        \end{definition}
+
+      \subsection{インスタンス}
+        \begin{definition}[インスタンス]
+          インスタンスは、型クラスに対して定義される操作を提供する。
+        \end{definition}
+
+    \section{証明の道具}
+      \subsection{アフィン空間}
+        \begin{definition}[アフィン空間]
+          環$k$ と、$k$-加群 $V$ を与える。(体でなくとも良い)
+          集合 $P$ が $V$ 上の（$k$ に関する）\emph{アフィン空間}（あるいは $V$-トーサー）であるとは，
+          写像
+          \[
+            (+^\vee)\;:\; P\times V \to P,\qquad (p,v)\mapsto p+^\vee v
+          \]
+          （点へのベクトルの作用）と写像
+          \[
+            (-^\vee)\;:\; P\times P \to V,\qquad (q,p)\mapsto q-^\vee p
+          \]
+          （2点の差：点 $p$ から点 $q$ への移動ベクトル）が存在して，次を満たすことである：
+          \begin{itemize}[leftmargin=2em]
+            \item（零ベクトル）任意の $p\in P$ について $p+^\vee \mathbf{0}=p$．
+            \item（結合律）任意の $p\in P$ と $v,w\in V$ について
+            \[
+              (p+^\vee v)+^\vee w = p+^\vee (v+w).
+            \]
+            \item（自由かつ推移的）任意の $p,q\in P$ に対し，ただ一つの $v\in V$ が存在して
+            \[
+              p+^\vee v = q
+            \]
+            を満たす．このただ一つの $v$ を $q-^\vee p$ と書く（すなわち $p+^\vee (q-^\vee p)=q$）．
+          \end{itemize}
+        \end{definition}
+        
+        \begin{remark}[注意：点どうしの和は一般に定義されない]
+          上の定義で与えられるのは「点 $p\in P$ にベクトル $v\in V$ を足す」操作 $p+^\vee v$ と，
+          「2点 $p,q\in P$ の差（移動ベクトル）」$q-^\vee p$ である。
+          一方で，\emph{点 $p,q\in P$ の和 $p+q$} や \emph{点のスカラー倍 $\lambda p$} は一般には定義されない。
+          （原点の選択をすると $P\simeq V$ と同一視でき，そのとき初めて点どうしの加法が導入できるが，
+          それはアフィン空間に余分な構造を入れることに相当する。）
+        \end{remark}
+
+      \subsection{アフィン写像}
+        \begin{definition}[アフィン写像]
+          アフィン空間$P_1$（ベクトル空間$V_1$上）からアフィン空間$P_2$（ベクトル空間$V_2$上）への
+          アフィン写像とは、線形写像$L: V_1 \to V_2$と点$b \in P_2$が存在して、
+          任意の$p \in P_1$に対して
+          \[
+          f(p) = L(p - p_0) + b
+          \]
+          と表される写像$f: P_1 \to P_2$である（$p_0$は$P_1$の任意の基点）。
+        \end{definition}
+
+      \subsection{重心座標}
+        \begin{definition}[重心座標]
+          アフィン空間$P$上の$n+1$個の点$p_0, p_1, \ldots, p_n$がアフィン独立であるとき、
+          任意の点$p \in P$は
+          \[
+          p = \sum_{i=0}^{n} \lambda_i p_i, \quad \sum_{i=0}^{n} \lambda_i = 1
+          \]
+          と一意に表される。このとき、$(\lambda_0, \lambda_1, \ldots, \lambda_n)$を
+          $p$の$p_0, p_1, \ldots, p_n$に関する重心座標（barycentric coordinates）という。
+        \end{definition}
+
+        三角形$\triangle ABC$の場合、任意の点$P$は$P = \alpha A + \beta B + \gamma C$（$\alpha + \beta + \gamma = 1$）
+        と表され、$(\alpha, \beta, \gamma)$が$P$の重心座標である。
+
+      \subsection{共点性}
+        \begin{definition}[共点する]
+          有限個の直線または線分が$1$点で交わるとき、それらは共点するという。
+        \end{definition}
+
+        \mathlib 4では、\texttt{Finset.affineCombination}や関連する補題が重心座標の計算をサポートする。
+
+        \subsection{単体}
+        \begin{definition}[（広義の）単体 / アフィン単体]
+          $n+1$個のアフィン独立な点 $p_0, p_1, \ldots, p_n$ を含むアフィン空間 $P$ において，
+          これらの点のアフィン包（affine hull）を（広義の）$n$-単体（あるいは \emph{アフィン} $n$-単体）と呼ぶ．
+          すなわち，
+          \[
+            \langle p_0,\ldots,p_n\rangle_{\mathrm{aff}}
+            := \left\{ \sum_{i=0}^{n} \lambda_i p_i \ \middle|\ \lambda_i \in k,\ \sum_{i=0}^{n} \lambda_i = 1 \right\}
+          \]
+          で定義する．
+        \end{definition}
+
+        \begin{remark}[注意：狭義の単体]
+          狭義の単体はアフィン独立な点の凸包として与えられる。
+          チェバの定理のより一般的な主張を記述するために本稿では広義の単体を扱う。
+        \end{remark}
+        
+      \subsection{面}
+        \begin{definition}[面]
+          $n$-単体$S$の頂点集合の部分集合$F$に対して、
+          $F$の要素の凸包を$S$の面という。
+          特に、$k+1$個の頂点からなる面を$k$-面という。
+        \end{definition}
+        
+        \begin{remark}[既存知識との関連]
+          三角形（$2$単体）の場合、$0$-面は頂点、$1$-面は辺、$2$-面は三角形全体である。
+        \end{remark}
+
+        \begin{definition}[対向する]
+          $n$-単体$S$の頂点$v$に対して、$v$を含まない$n-1$-面を$v$の対向面（opposite face）という。
+          また、$S$の頂点$v$と面$F$について、$F$が$v$の対向面であるとき、$F$は$v$に対向する（opposite to $v$）という。
+        \end{definition}
+
+        例えば、三角形$\triangle ABC$において、頂点$A$の対向面は辺$BC$である。
+        $n$-単体の各頂点に対し、その頂点を含まない$n-1$-面が対向面として一意に定まる。
+
+      \subsection{チェビアン}
+        \begin{definition}[チェビアン（$2$次元）]
+          三角形$\triangle ABC$において、頂点$A$と対辺$BC$上の点$D$を結ぶ直線$AD$を、
+          頂点$A$から引いたチェビアン（cevian）という。
+          同様に、$BE$（$E$は辺$CA$上）、$CF$（$F$は辺$AB$上）もチェビアンである。
+        \end{definition}
+
+        チェバの定理は、$3$本のチェビアンが$1$点で交わる条件を与える定理である。
+
+      \subsection{チェビアンの足}
+        \begin{definition}[チェビアンの足]
+          三角形$\triangle ABC$において、頂点$A$から引いたチェビアン$AD$と対辺$BC$の交点$D$を、
+          チェビアン$AD$の足（foot）という。
+          同様に、$E$はチェビアン$BE$の足、$F$はチェビアン$CF$の足である。
+        \end{definition}
+
+        チェバの定理では、各辺上の点$D, E, F$がチェビアンの足として機能する。
+        形式化においては、これらの点が適切な辺上にあることを保証する条件が必要となる。
+
+        三角形は$2$-単体、四面体は$3$-単体の例である。
+        \mathlib 4では、\texttt{Geometry.Euclidean.Simplex}モジュールに単体の定義が存在する。
+
+        チェバの定理は、複数のチェビアンが共点であるための条件を与える定理である。
+
+  % =========================================================
+  \chapter{チェバの定理の一般化と選定}
+    \section{チェバの定理($2$次元)の主張}
+
+      \begin{theorem}[チェバの定理（$2$次元）]
+        三角形$\triangle ABC$の各辺$BC, CA, AB$またはその延長線上にそれぞれ点$D, E, F$をとる（頂点とは異なる）。
+        このとき、$3$直線$AD, BE, CF$が$1$点で交わるための必要十分条件は、
+        \[
+        \frac{BD}{DC} \cdot \frac{CE}{EA} \cdot \frac{AF}{FB} = 1
+        \]
+        が成り立つことである。
+      \end{theorem}
+
+    \section{チェバの定理がアフィンな結果であること}
+      チェバの定理の主張には、一見すると線分の長さ（$BD, DC$など）が現れるため、
+      ユークリッド幾何に依存する定理のように見えるかもしれない。
+      しかし、実際には定理の条件は線分の長さの比$\frac{BD}{DC}$のみで記述されており、
+      これらの比はアフィン変換で不変である。したがって、チェバの定理は本質的にアフィン幾何の結果である。
+      この結果は\mathlib 4のどのライブラリにファイルを追加するかを決定する際に重要となる。
+
+      \subsection{アフィン変換と比の不変性}
+        アフィン変換とは、平行性と比を保つ変換である。
+        より正確には、アフィン空間$\mathbb{R}^n$上の変換$\varphi: \mathbb{R}^n \to \mathbb{R}^n$が
+        $\varphi(x) = Ax + b$（$A$は正則行列、$b$はベクトル）の形で表されるとき、$\varphi$をアフィン変換という。
+
+        アフィン変換の重要な性質として、同一直線上にある$3$点$P, Q, R$（$Q$は$P$と$R$の間）に対して、
+        比$\frac{PQ}{QR}$はアフィン変換で不変である：
+        \[
+        \frac{\overrightarrow{PQ}}{\overrightarrow{QR}} = \frac{\overrightarrow{\varphi(P)\varphi(Q)}}{\overrightarrow{\varphi(Q)\varphi(R)}}
+        \]
+        これは、アフィン変換が線形変換と平行移動の合成であり、線形変換がベクトルの比を保つことから従う。
+
+      \subsection{重心座標による説明}
+        三角形$\triangle ABC$内の任意の点$P$は、重心座標（barycentric coordinates）を用いて
+        \[
+        P = \alpha A + \beta B + \gamma C, \quad \alpha + \beta + \gamma = 1
+        \]
+        と一意に表される。ここで、$\alpha, \beta, \gamma$は実数である。
+
+        辺$BC$上の点$D$は、$D = (1-t)B + tC$（$t \in \mathbb{R}$）と表せる。
+        このとき、有向比は
+        \[
+        \frac{BD}{DC} = \frac{t}{1-t}
+        \]
+        となる。同様に、$E = (1-u)C + uA$、$F = (1-v)A + vB$とすると、
+        \[
+        \frac{CE}{EA} = \frac{u}{1-u}, \quad \frac{AF}{FB} = \frac{v}{1-v}
+        \]
+        である。
+
+        $3$直線$AD, BE, CF$が$1$点$P$で交わることは、$P$の重心座標が
+        \[
+        P = \frac{\alpha A + \beta B + \gamma C}{\alpha + \beta + \gamma}
+        \]
+        と表され、かつ$P$が各辺上にあることと同値である。
+        この条件は、重心座標の比のみで記述され、ユークリッド距離には依存しない。
+
+      \subsection{アフィン同値性}
+        以上の考察から、チェバの定理は以下の意味でアフィンな結果であることがわかる：
+        \begin{itemize}[leftmargin=2em]
+          \item 定理の条件（比の積=1）は、アフィン変換で不変な量（比）のみで記述されている。
+          \item 定理の結論（$3$直線の共点性）も、アフィン変換で保存される性質である。
+          \item したがって、任意のアフィン変換を施しても、チェバの定理の真偽は変わらない。
+        \end{itemize}
+
+        以上より、チェバの定理はユークリッド距離や角度に依存せず、
+        アフィン構造（平行性、比、共線性）のみに基づく定理であることが示された。
+
+    \section{高次元への一般化の候補}
+      \subsection{一般化の設計空間}
+        $2$次元のチェバの定理を非公式に表現すれば、「三角形の頂点から対辺に線分を下ろした時の共点する条件」についての定理と言える。
+        言い換えると、「$2$-単体の各頂点から対向する$1$次元面に$1$次元のチェビアンを下ろした時の共点する条件」についての定理と言える。
+        自然数が現れる箇所の扱い次第で一般化にバリエーションが存在する。
+
+      \subsection{候補A：周囲空間のみ高次元化}
+        $n$次元アフィン空間に$2$次元の三角形を埋め込み、周囲空間のみ高次元化する。
+        $2$-単体の各頂点から対向する$1$-面に$1$-チェビアンを下ろした時の（$n$次元空間内の）共点する条件についての定理。
+        定理の主張自体は大きく変わらない。
+
+      \subsection{候補B：$n$単体版,solopede,1-チェビアン}
+        $n$-単体の各頂点から対向する$n-1$-面への$1$-チェビアンを下ろした時の共点する条件についての定理。
+
+      \subsection{候補C：$n$単体版,solopede,2-チェビアン}
+        $n$-単体の各頂点から対向する$n-1$-面への$2$-チェビアンを下ろした時の共点する条件についての定理。
+
+      \subsection{候補D：$n$単体版,multipede}
+        $n$-単体の各頂点から対向する$k$-面（$1 \leq k \leq n-1$）への$1$-チェビアンを下ろした時の共点する条件についての定理。
+
+        後述のセクションで詳細な比較を行う。
+
+    \section{先行プロジェクトの紹介}
+      過去にいくつかチェバの定理の形式化に関する先行研究があったので紹介する。
+
+      \subsection{Lean$3$時代の形式化}
+        期間: $2021$年$12$月 〜 $2023$年$7$月\\
+        GitHub: https://github.com/leanprover-community/mathlib3/pull/10632
+
+      \subsection{Aristotle.AI（Harmonic社）を用いた形式化}
+        期間: $2025$年$12$月 〜 $2026$年$1$月\\
+        GitHub: https://github.com/leanprover-community/mathlib4/pull/33388
+
+        Boris Alexeev氏による試み。
+        Harmonic社が提供するLeanプログラム用のAIサービスAristotle.AIを用いて形式化した。
+        全てのコードがLeanの機械検証を通過し、安全性が保証された。
+        しかし、$2$次元のチェバの定理のみを形式化しており、高次元への一般化は行われていなかったため、\mathlib 4に追加するには一般性が足りないとして採用されなかった。
+
+      \subsection{$n$次元アフィン空間に一般化された初の形式化}
+        期間: $2026$年$1$月 〜 現在\\
+        GitHub: https://github.com/leanprover-community/mathlib4/pull/33409
+
+        Joseph Myers氏による試み。
+        過去の不十分な事例を踏まえて、$n$次元アフィン空間に一般化されたチェバの定理を形式化した。
+        おそらく現時点で最も一般性が高い形式化であり、\mathlib 4に追加する最適な候補であると考えられる。
+        一般化チェバの定理の順方向のみを形式化している。
+        現在PRレビュー中。
+
+    \section{\mathlib 4に加える一般化の選定}
+      \subsection{評価軸}
+        \begin{itemize}[leftmargin=2em]
+          \item 数学的自然さ（数学的に自然な一般化であるか）
+          \item 形式化コスト（既存定義・補題の有無）
+          \item 再利用性（他定理への応用のしやすさ）
+        \end{itemize}
+
+      \subsection{候補の比較}
+        \subsubsection{候補A：周囲空間のみ高次元化}
+          定理の主張が変わらないため、一般化としての価値が低い。
+
+        \subsubsection{候補B：$n$単体版,solopede,1-チェビアン}
+          定理の主張が変わらないため、一般化としての価値が低い。
+
+        \subsubsection{候補C：$n$単体版,solopede,2-チェビアン}
+          定理の主張が変わらないため、一般化としての価値が低い。
+
+        \subsubsection{候補D：$n$単体版,multipede}
+          定理の主張が変わらないため、一般化としての価値が低い。
+
+      \subsection{採用する一般化}
+        本稿では以降候補Bの一般化を採用する。
+
+  % =========================================================
+  \chapter{Leanでの実装}
+
+    \section{設計方針}
+      \subsection{設計の問題点}
+        後述するがチェバの定理を一般化すると順方向と逆方向で必要な仮定が異なる。
+        そのため、順方向と逆方向で別々のモジュールを追加する必要がある。
+        ただし必要十分性を主張する2次元のチェバの定理の一般化として
+      \subsection{設計方針と採用理由}
+
+    \section{追加する定理の主張と自然言語証明}
+      \subsection{記号の定義}
+        k: 環\\
+        V: k-加群\\
+        P: V上のアフィン空間\\
+        ι: 添字集合\\
+        p: ι → P\\
+        s: ιの非空部分集合\\
+
+      \subsection{順方向最大一般化}
+        \begin{theorem}[最大一般化チェバの定理]
+          \vskip\baselineskip
+          \noindent\textbf{\\仮定：}
+          \begin{enumerate}[label=(A\arabic*), leftmargin=3em]
+            \item $k$ は環である。
+            \item $V$ は可換加法群で $k$-加群である。
+            \item $P$ は $V$ 上のアフィン空間である。
+            \item 添字集合 $\iota$ について、点族 $p: \iota \to P$ をとるとき、$p$ はアフィン独立である。
+            \item $s \subseteq \iota$ は空でない。
+            \item 写像 $F: s \to \mathcal{P}(\iota)$ と $w: s \to (\iota \to k)$ が存在し、
+                  各 $i \in s$ について、$F_i$ は有限集合であり、$i \in F_i$ であり、次が成り立つ：
+                  \[
+                  \forall i \in s, \quad \sum_{j \in F_i} w_i(j) = 1.
+                  \]
+            \item 点 $p' \in P$ が存在し、各 $i \in s$ について、$p'$ は2点
+                  $p(i)$ と $p(i) + \sum_{j \in F_i} w_i(j)(p(j) - p(i))$ を結ぶ直線上に存在する：
+                  \[
+                  \forall i \in s, \quad p' \in \mathrm{line}\left(p(i), p(i) + \sum_{j \in F_i} w_i(j)(p(j) - p(i))\right).
+                  \]
+          \end{enumerate}
+          \noindent\textbf{\\結論：}
+          \begin{enumerate}[label=(C\arabic*), leftmargin=3em]
+            \item 重み $w': \iota \to k$ と有限集合 $F' \subseteq \iota$ が存在し、次を満たす：
+                  \[
+                  \sum_{j \in F'} w'(j) = 1.
+                  \]
+            \item $p'$ は次のように表せる：
+                  \[
+                  p' = \sum_{j \in F'} w'(j) p(j).
+                  \]
+            \item 各 $i \in s$ ごとにスカラー $r_i \in k$ が存在し、次が成り立つ：
+                  \[
+                  \forall i \in s, \quad \exists r_i \in k, \quad \forall j \in \iota, \quad
+                  r_i \cdot \mathbf{1}_{F_i \setminus \{i\}}(j) \cdot w_i(j) = 
+                  \mathbf{1}_{F' \setminus \{i\}}(j) \cdot w'(j).
+                  \]
+                  （$\mathbf{1}_A$ は indicator 関数：$j \in A$ なら 1、そうでなければ 0。）
+          \end{enumerate}
+        \end{theorem}
+
+        \begin{proof}
+          (C1) を示す。仮定 (A5) より $s \neq \emptyset$ なので、ある $i' \in s$ を取る。仮定 (A7) よりこの $i'$ に対して $p'$ は 2 点 $p(i')$ と
+          \[
+            p(i') + \sum_{j \in F_{i'}} w_{i'}(j)(p(j) - p(i'))
+          \]
+          を結ぶ直線上にある。よって（直線の媒介表示を使って）ある $r_{i'} \in k$ が存在して
+          \[
+            p' = (1 - r_{i'})p(i') + r_{i'}\left(p(i') + \sum_{j \in F_{i'}} w_{i'}(j)(p(j) - p(i'))\right)
+          \]
+          と書ける。ここで仮定 (A6) より $F_{i'}$ は有限で、かつ $\sum_{j \in F_{i'}} w_{i'}(j) = 1$ である。したがって
+          \[
+            p(i') + \sum_{j \in F_{i'}} w_{i'}(j)(p(j) - p(i')) = \sum_{j \in F_{i'}} w_{i'}(j)p(j)
+          \]
+          となり、結局
+          \[
+            p' = (1 - r_{i'})p(i') + r_{i'} \sum_{j \in F_{i'}} w_{i'}(j)p(j)
+          \]
+          を得る。ここで $w' : \iota \to k$ を次で定める：
+          \begin{itemize}
+            \item $j \notin F_{i'}$ なら $w'(j) = 0$、
+            \item $j \in F_{i'} \setminus \{i'\}$ なら $w'(j) = r_{i'} w_{i'}(j)$、
+            \item $j = i'$ なら $w'(i') = (1 - r_{i'}) + r_{i'} w_{i'}(i')$。
+          \end{itemize}
+          さらに $F' := F_{i'}$ と置く。仮定 (A6) より $F'$ は有限であり、
+          \[
+            \sum_{j \in F'} w'(j) = (1 - r_{i'}) + r_{i'} \sum_{j \in F'} w_{i'}(j) = (1 - r_{i'}) + r_{i'} \cdot 1 = 1
+          \]
+          だから $\sum_{j \in F'} w'(j) = 1$ が成り立つ。よって (C1) が得られる（ここで使ったのは (A5)(A7)(A6)）。
+
+          (C2) を示す。上で定めた $F', w'$ に対し、
+          \[
+            \sum_{j \in F'} w'(j)p(j) = (1 - r_{i'})p(i') + r_{i'} \sum_{j \in F'} w_{i'}(j)p(j)
+          \]
+          となるように $w'$ を作ってあるので、上で得た等式
+          \[
+            p' = (1 - r_{i'})p(i') + r_{i'} \sum_{j \in F'} w_{i'}(j)p(j)
+          \]
+          と一致し、
+          \[
+            p' = \sum_{j \in F'} w'(j)p(j)
+          \]
+          が成り立つ。したがって (C2) が得られる（ここで使ったのは (A7)(A6) と、(C1) の構成）。
+
+          (C3) を示す。任意の $i \in s$ を取る。仮定 (A7) をこの $i$ に適用すると、ある $r_i \in k$ が存在して
+          \[
+            p' = (1 - r_i)p(i) + r_i\left(p(i) + \sum_{j \in F_i} w_i(j)(p(j) - p(i))\right)
+          \]
+          と書ける。仮定 (A6) の $\sum_{j \in F_i} w_i(j) = 1$ を用いると括弧内は $\sum_{j \in F_i} w_i(j)p(j)$ に等しいから、
+          \[
+            p' = (1 - r_i)p(i) + r_i \sum_{j \in F_i} w_i(j)p(j)
+          \]
+          を得る。ここで前と同様に $\tilde{w}_i : \iota \to k$ を
+          \begin{itemize}
+            \item $j \notin F_i$ なら $\tilde{w}_i(j) = 0$、
+            \item $j \in F_i \setminus \{i\}$ なら $\tilde{w}_i(j) = r_i w_i(j)$、
+            \item $j = i$ なら $\tilde{w}_i(i) = (1 - r_i) + r_i w_i(i)$
+          \end{itemize}
+          で定めると、
+          \[
+            p' = \sum_{j \in F_i} \tilde{w}_i(j)p(j), \quad \sum_{j \in F_i} \tilde{w}_i(j) = 1
+          \]
+          が成り立つ（ここで使ったのは (A6)(A7)）。
+
+          一方、(C1)(C2) により $p'$ は
+          \[
+            p' = \sum_{j \in F'} w'(j)p(j), \quad \sum_{j \in F'} w'(j) = 1
+          \]
+          とも表されている。ここで仮定 (A4)（点族 $p$ のアフィン独立性）を用いると、「有限台で係数和が 1 のアフィン結合表示が同じ点 $p'$ を与えるなら、（集合の外を 0 とみなした）係数関数は一致する」ので、
+          \[
+            \forall j \in \iota, \quad \mathbf{1}_{F_i}(j) \tilde{w}_i(j) = \mathbf{1}_{F'}(j) w'(j)
+          \]
+          が従う。特に $j \neq i$ の部分だけを取り出すと、定義より $\mathbf{1}_{F_i \setminus \{i\}}(j) \tilde{w}_i(j) = r_i \mathbf{1}_{F_i \setminus \{i\}}(j) w_i(j)$ であり、右辺は $\mathbf{1}_{F' \setminus \{i\}}(j) w'(j)$ と一致するから、
+          \[
+            \forall j \in \iota, \quad r_i \cdot \mathbf{1}_{F_i \setminus \{i\}}(j) w_i(j) = \mathbf{1}_{F' \setminus \{i\}}(j) w'(j)
+          \]
+          を得る。これが (C3) である（ここで使ったのは (A7)(A6)(C1)(C2)(A4)）。
+        \end{proof}
+
+      \subsection{逆方向最大一般化}
+        \begin{theorem}[最大一般化チェバの定理（逆方向）]
+        % TODO: ここに主定理ステートメント（共点条件 <-> ある積=1 / ある行列式条件）を書く。
+        \end{theorem}
+        \begin{proof}
+        % TODO: 証明（できるだけ線形代数に落として見通しよく）
+        \end{proof}
+
+      \subsection{最大の必要十分条件}
+        \begin{theorem}[チェバの定理の必要十分条件]
+        % TODO: ここに主定理ステートメント（共点条件 <-> ある積=1 / ある行列式条件）を書く。
+        \end{theorem}
+        \begin{proof}
+        % TODO: 証明（できるだけ線形代数に落として見通しよく）
+        \end{proof}
+
+        順方向についてはすでに形式化されているので、これに沿った形で逆方向および必要十分条件の形式化を行う。
+
+    \section{追加モジュールの実装}
+      \subsection{転用できる部分}
+        % TODO: 既存の Affine, LinearAlgebra, simplex 関連を列挙。
+
+      \subsection{追加するモジュール}
+        % TODO: 例: Geometry/Affine/SimplexCeva.lean など
+
+      \subsection{実装の工夫事項・特記事項}
+        % TODO: simp lemma 管理、型クラス、ローカル記法、テスト方針。
+
+  % =========================================================
+  \chapter{結論と今後の展望}
+
+    \section{結論}
+      チェバの定理の$n$次元の一般化を「各頂点に対向する$n-1$-面またはその延長上の点を結ぶ$1$次元チェビアンが共点する条件」として定式化。
+      既にJoseph Myers氏によって形式化された順方向のチェバの定理に加えて、逆方向のチェバの定理を形式化し、\mathlib 4にPRを提出した。
+
+    \section{応用例}
+      \subsection{メネラウスの定理}
+
+    \section{今後の課題}
+      コミュニケーション不足によりチェバの定理の順方向の形式化については、Joseph Myers氏に先行されてしまった。
+      今回培ったOSS開発の作法に従い、次回以降のプロジェクトに取り組んでいきたい。
+        
+
+    \section{\Lean 普及と形式化研究の展望}
+      現在Lean4のAutoformalizationという技術開発が進んでおり、自然言語で記述した数学の証明をそのままLean4の形式言語に書き換えることが目指されている。
+      今回は個別の定理を形式化すると言うプロジェクトであったが、この技術を用いればある数学的な証明を自然言語で記述するだけで、立ちどころに形式証明が得られると考えられている。
+      この技術は、Lean4研究を飛躍的に促進すると考えられる。個別の定理の形式化だけでなく、このAutoformalizationに関する見識も深めていきたい。
+        
+        
+        
+
+  % =========================================================
+  \appendix
+  \chapter{付録：主要 \Lean コード抜粋}
+    % 例（実際のコードに差し替え）
+    \begin{lstlisting}
+    -- import ...（後で差し替え）
+    -- theorem ... := by
+    --   ...
+    \end{lstlisting}
+
+  \chapter{付録：概念対応表（数学用語 ↔ \Lean の型／定義）}
+    % TODO
+
+  \chapter{付録：実装ログ（ハマりどころ集）}
+    % TODO
+
+  \backmatter
+  \addchaptertotoc{謝辞}
+    % TODO
+
+  \begin{thebibliography}{99}
+
+    \bibitem{DeepMindIMO2025}
+      Google DeepMind, \emph{Advanced version of Gemini with Deep Think officially achieves gold-medal standard at the International Mathematical Olympiad}, 2025.
+    \bibitem{multipede}
+      Dov Samet, \emph{An Extension of Ceva's Theorem ton-Simplices}, 2021.
+  \end{thebibliography}
 
 \end{document}
