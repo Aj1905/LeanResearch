@@ -3,15 +3,18 @@ Copyright (c) 2025 Joseph Myers. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 Authors: Joseph Myers
 -/
-
 module
 
-public import Mathlib
+public import Mathlib.LinearAlgebra.AffineSpace.Simplex.Basic
 
 /-!
 # Ceva's theorem.
 
 This file proves various versions of Ceva's theorem.
+
+## References
+
+* https://en.wikipedia.org/wiki/Ceva%27s_theorem
 
 -/
 
@@ -81,12 +84,7 @@ lemma exists_affineCombination_eq_smul_eq {p : ι → P} (hp : AffineIndependent
   have hwx : ∀ i, ∑ j ∈ fsx i, wx i j = 1 := by
     intro i
     simp_rw [← hw i, fsx, wx]
-    by_cases hi : (i : ι) ∈ fs i
-    · rw [Finset.insert_eq_of_mem hi]
-      exact Finset.sum_congr rfl (fun j hj ↦ (by simp [hj]))
-    · simp only [hi, not_false_eq_true, Finset.sum_insert, SetLike.mem_coe,
-        Set.indicator_of_notMem, zero_add]
-      exact Finset.sum_congr rfl (fun j hj ↦ (by simp [hj]))
+    by_cases hi : (i : ι) ∈ fs i <;> simpa [hi] using Finset.sum_congr rfl (by aesop)
   have hp'x : ∀ i : s, p' ∈ line[k, p i, (fsx i).affineCombination k p (wx i)] := by
     intro i
     convert hp' i using 4
@@ -99,10 +97,7 @@ lemma exists_affineCombination_eq_smul_eq {p : ι → P} (hp : AffineIndependent
   convert hr j using 2
   simp only [Set.indicator_apply, Set.mem_diff, SetLike.mem_coe, Set.mem_singleton_iff,
     Finset.coe_insert, Set.insert_diff_of_mem, fsx, wx]
-  by_cases hji : j = i
-  · simp [hji]
-  · simp only [hji, not_false_eq_true, and_true, left_eq_ite_iff, ite_eq_right_iff]
-    exact fun hnm hm ↦ False.elim (hnm hm)
+  grind
 
 /-- A version of **Ceva's theorem** for a finite indexed affinely independent family of points:
 consider some lines, each through one of the points and an affine combination of the points, and
@@ -135,13 +130,15 @@ namespace Affine.Triangle
 
 section CommRing
 
-variable [CommRing k] [IsDomain k] [AddCommGroup V] [Module k V] [AffineSpace V P]
+variable [CommRing k] [NoZeroDivisors k] [AddCommGroup V] [Module k V] [AffineSpace V P]
 
 /-- **Ceva's theorem** for a triangle, expressed in terms of multiplying weights. -/
 lemma prod_eq_prod_one_sub_of_mem_line_point_lineMap {t : Triangle k P} {r : Fin 3 → k} {p' : P}
     (hp' : ∀ i : Fin 3, p' ∈
       line[k, t.points i, AffineMap.lineMap (t.points (i + 1)) (t.points (i + 2)) (r i)]) :
     ∏ i, r i = ∏ i, (1 - r i) := by
+  rcases subsingleton_or_nontrivial k
+  · exact Subsingleton.elim _ _
   let w : ↑(Set.univ : Set (Fin 3)) → Fin 3 → k :=
     fun i ↦ Finset.affineCombinationLineMapWeights (i + 1) (i + 2) (r i)
   have hw : ∀ i, ∑ j, w i j = 1 := by simp [w]
@@ -202,7 +199,7 @@ end CommRing
 
 section Field
 
-variable [Field k] [IsDomain k] [AddCommGroup V] [Module k V] [AffineSpace V P]
+variable [Field k] [AddCommGroup V] [Module k V] [AffineSpace V P]
 
 /-- **Ceva's theorem** for a triangle, expressed using division. -/
 lemma prod_div_one_sub_eq_one_of_mem_line_point_lineMap {t : Triangle k P} {r : Fin 3 → k}

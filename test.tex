@@ -1,0 +1,330 @@
+% !TEX program = lualatex
+\documentclass[a4paper,12pt]{bxjsbook}
+
+% =========================================================
+% Packages
+% =========================================================
+
+% --- Japanese (LuaLaTeX) ---
+\usepackage{luatexja}
+
+% --- math / layout ---
+\usepackage{amssymb}
+\usepackage{amsthm}
+\usepackage{mathtools}
+\usepackage{geometry}
+\geometry{margin=25mm}
+
+% --- figures / misc ---
+\usepackage{graphicx}
+\usepackage{enumitem}
+\usepackage{hyperref}
+\usepackage{bookmark}
+\usepackage{tikz}
+\usetikzlibrary{shapes.geometric, arrows.meta, positioning, calc}
+\tikzset{
+  box/.style={
+    rectangle, draw, thick,
+    text width=3.2cm,  % ★ 追加（minimum width より安定）
+    minimum height=1cm,
+    align=center, font=\small
+  },
+  myarrow/.style={->, >=Stealth, thick},
+  danger/.style={box, fill=red!20},
+  safe/.style={box, fill=green!20},
+  process/.style={box, fill=blue!10}
+}
+
+% --- code (Lean) ---
+\usepackage{listings}
+\usepackage{xcolor}
+
+\lstdefinelanguage{Lean}{
+    morekeywords={
+        theorem,lemma,def,example,import,namespace,section,end,by,fun,match,with,
+        simp,calc,have,show,exact,apply,refine,intro,case,let,where,structure,
+        variable,variables,open,attribute,macro_rules,inductive,axiom,universe,
+        notation,scoped
+    },
+    sensitive=true,
+    morecomment=[l]{--},
+    morecomment=[s]{/-}{-/},
+    morestring=[b]"
+}
+
+\lstset{
+    language=Lean,
+    basicstyle=\ttfamily\small,
+    columns=fullflexible,
+    frame=single,
+    breaklines=true,
+    showstringspaces=false
+}
+
+\hypersetup{
+    colorlinks=true,
+    linkcolor=blue,
+    urlcolor=blue,
+    citecolor=blue
+}
+
+% =========================================================
+% length definition
+% =========================================================
+\newlength{\customindent}
+\setlength{\customindent}{2em}
+
+% =========================================================
+% macro definition
+% =========================================================
+\newcommand{\BodyListFixBegin}{ 
+    \begingroup 
+    \setlength{\rightskip}{0pt} 
+    \setlength{\parindent}{0pt}
+    \setlength{\displaywidth}{\linewidth} 
+}\newcommand{\BodyListFixEnd}{\ifhmode\par\fi\endgroup}
+
+\newenvironment{BodyListFix}{\BodyListFixBegin}{\BodyListFixEnd}
+
+% =========================================================
+% environment definition
+% =========================================================
+
+% Main_Sentense styles
+\newenvironment{body}{
+    \par
+    \begingroup
+        \setlength{\leftskip}{\customindent}
+        \setlength{\rightskip}{0pt}
+        \setlength{\displayindent}{\customindent}
+        \setlength{\displaywidth}{\dimexpr\linewidth-\customindent\relax}
+}{
+    \par
+    \endgroup
+}
+
+% description in Main_Sentense styles
+\newlist{bodydescription}{description}{1}
+\setlist[bodydescription]{
+  labelwidth=0pt,
+  labelsep=0pt,
+  itemindent=0pt,
+  style=nextline, 
+  font=\bfseries
+}
+
+% itemize in Main_Sentense styles
+\newlist{bodyitemize}{itemize}{3}
+\setlist[bodyitemize]{
+  leftmargin=3em,  % body環境(2em)からさらに3em右 = 合計5em
+  label=\textbullet, 
+  before=\begin{BodyListFix},
+  after=\end{BodyListFix}
+}
+\setlist[bodyitemize,2]{leftmargin=3.5em}  % さらに深い階層
+\setlist[bodyitemize,3]{leftmargin=4em}
+
+% enumerate in Main_Sentense styles
+\newlist{bodyenumerate}{enumerate}{3}
+\setlist[bodyenumerate]{
+  leftmargin=4em,  % body環境(2em)からさらに4em右 = 合計6em
+  label=(\arabic*),            
+  before=\begin{BodyListFix},
+  after=\end{BodyListFix}
+}
+\setlist[bodyenumerate,2]{leftmargin=4.5em, label=(\alph*)}
+\setlist[bodyenumerate,3]{leftmargin=5em, label=(\roman*)}  % 4em → 5em
+
+% Theorem styles
+\newtheoremstyle{theorem}
+    {-3pt}                          % 上のスペース
+    {0pt}                           % 下のスペース
+    {                               % ボディ部分の設定
+        \normalfont
+        \setlength{\leftskip}{\customindent}  % 全体を右にずらす (2em)
+        \setlength{\parindent}{0pt}
+        \setlength{\rightskip}{0pt}
+        \setlength{\displayindent}{\customindent}
+        \setlength{\displaywidth}{\dimexpr\linewidth-\customindent\relax}
+    }
+    {0pt}                           % インデント量
+    {\bfseries}                     % ヘッダーフォント
+    {.}                             % ヘッダー後の句読点
+    {\newline}                      % 改行
+    {                               % ヘッダーのレイアウト設定
+        \hskip-\customindent        % ヘッダーの開始位置だけ左に戻す
+        \thmname{#1}\thmnumber{ #2}\thmnote{（#3）}
+    }
+
+\theoremstyle{theorem}
+\newtheorem{theorem}{定理}[chapter]
+\newtheorem{lemma}[theorem]{補題}
+\newtheorem{proposition}[theorem]{命題}
+\newtheorem{corollary}[theorem]{系}
+\newtheorem{definition}[theorem]{定義}
+\newtheorem{example}[theorem]{例}
+\newtheorem{remark}[theorem]{注意}
+
+% description in Theorem styles
+\newlist{theoremdescription}{description}{3}
+\setlist[theoremdescription]{
+  leftmargin=5em,  % theorem環境(2em)からさらに3em右 = 合計5em
+  label=\textbullet,
+  before=\begin{BodyListFix},
+  after=\end{BodyListFix}
+}
+\setlist[theoremdescription,2]{leftmargin=5.5em}
+\setlist[theoremdescription,3]{leftmargin=6em}
+
+% itemize in Theorem styles
+\newlist{theoremitemize}{itemize}{3}
+\setlist[theoremitemize]{
+  leftmargin=5em,  % theorem環境(2em)からさらに3em右 = 合計5em
+  label=\textbullet,
+  before=\begin{BodyListFix},
+  after=\end{BodyListFix}
+}
+\setlist[theoremitemize,2]{leftmargin=5.5em}
+\setlist[theoremitemize,3]{leftmargin=6em}
+
+% enumerate in Theorem styles
+\newlist{theoremenumerate}{enumerate}{3}
+\setlist[theoremenumerate]{
+  leftmargin=6em,  % theorem環境(2em)からさらに4em右 = 合計6em
+  label=(\arabic*),            
+  before=\begin{BodyListFix},
+  after=\end{BodyListFix}
+}
+\setlist[theoremenumerate,2]{leftmargin=6.5em, label=(\alph*)}
+\setlist[theoremenumerate,3]{leftmargin=7em, label=(\roman*)} % 4em → 5em
+% =========================================================
+% Convenience commands
+% =========================================================
+\newcommand{\addchaptertotoc}[1]{
+    \chapter*{#1}
+    \addcontentsline{toc}{chapter}{#1}
+}
+
+% =========================================================
+% Metadata
+% =========================================================
+\title{チェバの定理の高次元一般化と\\ Lean4/mathlib4 への形式化}
+\author{    
+    秋田 隼\\
+    早稲田大学\\
+    1W221002-0
+    }
+
+\date{$2026$/$1$/$9$}
+
+% =========================================================
+% Document
+% =========================================================
+\begin{document}
+
+    \maketitle
+
+    \frontmatter
+    \addchaptertotoc{要旨}
+
+    \begin{body}
+        本研究は、$2$次元の古典的チェバの定理を出発点として、$n$次元アフィン空間における適切な一般化およびその逆を定式化し、 Lean4/mathlib4 上での形式化を目標とする。
+        主な貢献は以下である。
+
+        \begin{bodyitemize}[leftmargin=3em]
+            \item $n$次元アフィン空間でのチェバの定理とその逆の定式化の紹介。
+            \item 既存の mathlib4 の構造を調査し、再利用可能部分と不足部分を切り分ける設計指針。
+            \item 不足する補題・定義をモジュール化して追加し、定理の機械検証を通す。
+        \end{bodyitemize}
+
+        \vskip\baselineskip
+        実装は GitHub リポジトリで公開している：
+        \par\noindent
+        \url{https://github.com/Aj1905/LeanResearch.git}
+    \end{body}
+
+    \tableofcontents
+
+    \mainmatter
+
+    % =========================================================
+    \chapter{序論}
+    % =========================================================
+
+    \section{研究背景と動機}
+    \begin{body}
+
+        \indent 近年の生成AIは、言語モデルに推論能力を付与する工夫や、計算ツール・検証器との連携によって急速に性能を向上させている。
+        特に$2025$年には、複数のAIモデルが国際数学オリンピック（IMO）の問題セットに対して 金メダル基準（gold-medal standard）に相当する得点を達成したと報告された\cite{DeepMindIMO2025}。
+
+        \indent 一方で、自然言語のみで推論するLLMは、もっともらしいが誤りを含む出力（ハルシネーション）を生成しうる。
+        これを改善するために定理証明器を統合した枠組みでは、自然言語の解法案を全部または部分的に形式化して検証し、 失敗時はフィードバックによる修正ループを回せる。
+        そのため、形式検証が及ぶ範囲についてはハルシネーションを大幅に抑制でき、結果として出力全体に対するハルシネーションの頻度も抑えられる。
+        （ただし、問題文の形式化や自然言語への説明生成には依然として誤りが入りうる。）
+        よって、「形式検証の及ぶ範囲を拡大する」、「問題文の形式化精度を向上させる」ことで生成AIの数学力は向上すると考えられる。
+
+        \indent Leanとはこのような定理証明器の一種であり、OSSコミュニティによって近年開発が盛んに行われている。
+        このコミュニティには数学体系が形式化されたmathlib4と呼ばれるライブラリが存在し、世界中の数学者・技術者によって日々拡充が進められている。
+        大部分の定理はすでにLeanに翻訳されているが、まだ形式化の完了していない定理も存在しその中で主要のものは「Missing theorems from Freek Wiedijk's list of 100 theorems」というリストに挙げられている。
+        チェバの定理はこのリストの一つである。
+    \end{body}
+
+    \begin{figure}[htbp]
+        \centering
+        \begin{tikzpicture}[node distance=2.5cm]
+        
+            \node[box] (nlProblem) {\parbox{3.2cm}{\centering 自然言語\par 問題}};
+            \node[danger, right=of nlProblem] (nlReasoning)
+              {\parbox{3.2cm}{\centering 自然言語\par 推論\par {\scriptsize （ハルシネーション\par のリスク）}}};
+            \node[danger, right=of nlReasoning] (nlAnswer)
+              {\parbox{3.2cm}{\centering 自然言語\par 解答\par {\scriptsize （誤りの\par 可能性）}}};
+          
+            \draw[myarrow] (nlProblem) -- (nlReasoning);
+            \draw[myarrow] (nlReasoning) -- (nlAnswer);
+          
+            \node[box, below=3.5cm of nlProblem] (flProblemNl)
+              {\parbox{3.2cm}{\centering 自然言語\par 問題}};
+            \node[process, right=of flProblemNl] (formalize)
+              {\parbox{3.2cm}{\centering 形式化\par {\scriptsize （誤りの\par 可能性）}}};
+            \node[safe, right=of formalize] (flProblem)
+              {\parbox{3.2cm}{\centering 形式言語\par 問題}};
+            \node[safe, right=of flProblem] (flReasoning)
+              {\parbox{3.2cm}{\centering 形式言語\par 推論\par {\scriptsize （検証済み）}}};
+            \node[safe, right=of flReasoning] (flAnswer)
+              {\parbox{3.2cm}{\centering 形式言語\par 解答\par {\scriptsize （正しさ\par 保証）}}};
+            \node[process, below=1.2cm of flAnswer] (explain)
+              {\parbox{3.2cm}{\centering 自然言語化\par {\scriptsize （誤りの\par 可能性）}}};
+            \node[danger, left=of explain] (finalAnswer)
+              {\parbox{3.2cm}{\centering 自然言語\par 解答\par {\scriptsize （部分的\par 保証）}}};
+          
+            \draw[myarrow] (flProblemNl) -- (formalize);
+            \draw[myarrow] (formalize) -- (flProblem);
+            \draw[myarrow] (flProblem) -- (flReasoning);
+            \draw[myarrow] (flReasoning) -- (flAnswer);
+            \draw[myarrow] (flAnswer) -- (explain);
+            \draw[myarrow] (explain) -- (finalAnswer);
+          
+            \draw[myarrow, dashed, red]
+              (flReasoning.south) .. controls +(0,-1.0) and +(0,-1.0) ..
+              node[right, font=\scriptsize] {検証失敗}
+              (flProblem.south);
+          
+            % ラベル（font= でも良いが、確実性優先で中で太字にする）
+            \node[above=0.3cm of nlProblem] {\bfseries 従来の自然言語推論};
+            \node[above=0.3cm of flProblemNl] {\bfseries 形式検証統合推論};
+          
+            \node[
+              below=0.5cm of finalAnswer,
+              anchor=north west,
+              align=left,
+              font=\scriptsize
+            ] (legend) {%
+              \parbox{6.5cm}{%
+                \textcolor{red!60}{\rule{0.9em}{0.9em}}\;ハルシネーションのリスクあり\par
+                \textcolor{green!60}{\rule{0.9em}{0.9em}}\;形式検証により正しさ保証\par
+                \textcolor{blue!30}{\rule{0.9em}{0.9em}}\;形式化・自然言語化（課題）%
+              }%
+            };
+        \end{tikzpicture}
+    \end{figure}
+\end{document}

@@ -3,4 +3,3 @@ python-dotenv>=1.0.0
 
 # Aristotle CLI（別途インストールが必要）
 # pip install aristotlelib
-
