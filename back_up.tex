@@ -1,0 +1,1818 @@
+% 示す主張をチェバの定理の一般化の必要十分条件に切り替えたときの前の状態
+
+% !TEX program = lualatex
+\documentclass[a4paper,12pt]{bxjsbook}
+
+% =========================================================
+% Packages
+% =========================================================
+
+% --- Japanese (LuaLaTeX) ---
+\usepackage{luatexja}
+
+% --- math / layout ---
+\usepackage{amssymb}
+\usepackage{amsthm}
+\usepackage{mathtools}
+\usepackage{geometry}
+\geometry{margin=25mm}
+
+% --- lists / links / figures ---
+\usepackage{enumitem}
+\usepackage{hyperref}
+\usepackage{tikz}
+\usetikzlibrary{arrows.meta, positioning, calc, fit, backgrounds}
+
+\hypersetup{
+  colorlinks=true,
+  linkcolor=blue,
+  urlcolor=blue,
+  citecolor=blue
+}
+
+% =========================================================
+% length definition
+% =========================================================
+\newlength{\customindent}
+\setlength{\customindent}{2em}
+
+% =========================================================
+% macro definition
+% =========================================================
+\newcommand{\BodyListFixBegin}{%
+  \begingroup
+  \setlength{\rightskip}{0pt}%
+  \setlength{\parindent}{0pt}%
+  \setlength{\displaywidth}{\linewidth}%
+}
+\newcommand{\BodyListFixEnd}{\ifhmode\par\fi\endgroup}
+
+\newenvironment{BodyListFix}{\BodyListFixBegin}{\BodyListFixEnd}
+
+% =========================================================
+% environment definition
+% =========================================================
+
+% Main_Sentense styles
+\newenvironment{body}{
+  \par
+  \begingroup
+  \setlength{\leftskip}{\customindent}
+  \setlength{\rightskip}{0pt}
+  \setlength{\parindent}{1em}
+  \setlength{\displayindent}{\customindent}
+  \setlength{\displaywidth}{\dimexpr\linewidth-\customindent\relax}
+}{
+  \par
+  \endgroup
+}
+
+% description in Main_Sentense styles
+\newlist{bodydescription}{description}{1}
+\setlist[bodydescription]{
+  labelwidth=0pt,
+  labelsep=0pt,
+  itemindent=0pt,
+  style=nextline,
+  font=\bfseries
+}
+
+% itemize in Main_Sentense styles
+\newlist{bodyitemize}{itemize}{3}
+\setlist[bodyitemize]{
+  leftmargin=3em,
+  label=\textbullet,
+  before=\begin{BodyListFix},
+  after=\end{BodyListFix}
+}
+\setlist[bodyitemize,2]{leftmargin=3.5em}
+\setlist[bodyitemize,3]{leftmargin=4em}
+
+% enumerate in Main_Sentense styles
+\newlist{bodyenumerate}{enumerate}{3}
+\setlist[bodyenumerate]{
+  leftmargin=4em,
+  label=(\arabic*),
+  before=\begin{BodyListFix},
+  after=\end{BodyListFix}
+}
+\setlist[bodyenumerate,2]{leftmargin=4.5em, label=(\alph*)}
+\setlist[bodyenumerate,3]{leftmargin=5em, label=(\roman*)}
+
+% Theorem styles
+\newtheoremstyle{theorem}
+  {-3pt}
+  {0pt}
+  {
+    \normalfont
+    \setlength{\leftskip}{\customindent}
+    \setlength{\parindent}{0pt}
+    \setlength{\rightskip}{0pt}
+    \setlength{\displayindent}{\customindent}
+    \setlength{\displaywidth}{\dimexpr\linewidth-\customindent\relax}
+  }
+  {0pt}
+  {\bfseries}
+  {.}
+  {\newline}
+  {
+    \hskip-\customindent
+    \thmname{#1}\thmnumber{ #2}\thmnote{（#3）}
+  }
+
+\theoremstyle{theorem}
+\newtheorem{theorem}{定理}[chapter]
+\newtheorem{lemma}[theorem]{補題}
+\newtheorem{proposition}[theorem]{命題}
+\newtheorem{corollary}[theorem]{系}
+\newtheorem{definition}[theorem]{定義}
+\newtheorem{example}[theorem]{例}
+\newtheorem{remark}[theorem]{注意}
+\newtheorem{abbreviation}[theorem]{略記}
+
+% description in Theorem styles
+\newlist{theoremdescription}{description}{3}
+\setlist[theoremdescription]{
+  leftmargin=5em,
+  label=\textbullet,
+  before=\begin{BodyListFix},
+  after=\end{BodyListFix}
+}
+\setlist[theoremdescription,2]{leftmargin=5.5em}
+\setlist[theoremdescription,3]{leftmargin=6em}
+
+% itemize in Theorem styles
+\newlist{theoremitemize}{itemize}{3}
+\setlist[theoremitemize]{
+  leftmargin=5em,
+  label=\textbullet,
+  before=\begin{BodyListFix},
+  after=\end{BodyListFix}
+}
+\setlist[theoremitemize,2]{leftmargin=5.5em}
+\setlist[theoremitemize,3]{leftmargin=6em}
+
+% enumerate in Theorem styles
+\newlist{theoremenumerate}{enumerate}{3}
+\setlist[theoremenumerate]{
+  leftmargin=6em,
+  label=(\arabic*),
+  before=\begin{BodyListFix},
+  after=\end{BodyListFix}
+}
+\setlist[theoremenumerate,2]{leftmargin=6.5em, label=(\alph*)}
+\setlist[theoremenumerate,3]{leftmargin=7em, label=(\roman*)}
+
+% =========================================================
+% Proof Environment Setting
+% =========================================================
+\makeatletter
+\renewenvironment{proof}[1][\proofname]{%
+  \par\pushQED{\qed}%
+  \normalfont
+  \topsep6\p@\@plus6\p@\relax
+  \list{}{%
+    \leftmargin=\customindent
+    \rightmargin=0pt
+    \labelwidth=0pt
+    \labelsep=0pt
+    \itemindent=0pt
+    \listparindent=0pt
+    \parsep=0pt
+  }%
+  \item[\itshape #1\@addpunct{.}\hspace{0.5em}]%
+  \setlength{\displayindent}{\customindent}%
+  \setlength{\displaywidth}{\dimexpr\linewidth-\customindent\relax}%
+  \ignorespaces
+}{%
+  \popQED\endlist\@endpefalse
+}
+\makeatother
+
+% =========================================================
+% Convenience commands
+% =========================================================
+\newcommand{\addchaptertotoc}[1]{%
+  \chapter*{#1}%
+  \addcontentsline{toc}{chapter}{#1}%
+}
+\newcommand{\dotminus}{\mathbin{\dot{-}}}
+
+\DeclareMathOperator{\AffHull}{AffHull}
+
+
+% =========================================================
+% Metadata
+% =========================================================
+\title{チェバの定理の高次元一般化と\\ Lean4/mathlib4への形式化}
+\author{    
+    秋田 隼\\
+    早稲田大学\\
+    1W221002-0
+    }
+
+\date{$2026$/$1$/$9$}
+
+% =========================================================
+% Document
+% =========================================================
+\begin{document}
+
+    \maketitle
+
+    \frontmatter
+    \addchaptertotoc{要旨}
+
+    \begin{body}
+      \indent 本研究は、古典的チェバの定理を出発点として、チェバの定理の一般化およびその逆を定式化し、Lean4/mathlib4上での形式化を目標とする。
+
+      \indent 主な貢献は以下である。
+
+      \begin{bodyitemize}[leftmargin=3em]
+        \item チェバの定理とその逆の一般化の定式化の紹介。
+        \item 既存のmathlib4の構造を調査し、再利用可能部分と不足部分を切り分ける設計指針。
+        \item 不足する補題・定義をモジュール化して追加し、定理の機械検証を通す。
+      \end{bodyitemize}
+
+        \vskip\baselineskip
+        \indent 実装はGitHubリポジトリで公開している：
+        \par\noindent
+        \url{https://github.com/Aj1905/LeanResearch.git}
+    \end{body}
+
+    \tableofcontents
+
+    \mainmatter
+
+    % =========================================================
+    \chapter{序論}
+    % =========================================================
+
+    \section{研究背景と動機}
+    \begin{body}
+      \indent 本研究は、mathlib4に存在する順方向チェバの定理の形式化を基盤として、より一般の状況に拡張したチェバ型定理およびその逆をLean4上で構成し、mathlib4への追加を目指す。mathlib4は、Lean Prover Communityにより開発される大規模数学ライブラリ\cite{LeanProverCommunity}であり、分野により整備状況には濃淡がある。
+      特に幾何学は、形式化が代数的手法に比べて技術的に困難であることや、図形的直観の形式言語翻訳の複雑さが起因するためか発展が停滞気味である。こうした開発目標を可視化すべく、数学において重要でありながら未だ形式化されていない定理が「missing 100 theorems」としてリストアップされている。
+
+      \indent チェバの定理は、図形の共点性を代数条件へ翻訳する基本的な道具であり、多数の幾何学的議論の分岐点として機能する。この種の定理を一般化してライブラリ化することの価値は、定理本体に加えて単体・面・アフィン結合・重心座標などの重要な周辺概念を再利用可能な形で整備できる点にある。よって今後の幾何定理を形式化する際の基盤を構築できるという点で大きな意義を持つと考える。
+
+      \indent さらに、形式化は教科書的証明に潜む暗黙の仮定（ゼロ除算回避、退化配置の排除、必要な代数構造など）を明示し、どの仮定のもとでどの結論が成立するかを定理の型として確定する。このことは、一般化の汎用性を、証明の文章ではなく Lean の型と依存関係によって機械的に検証可能な形で提示できる点で、数学的にも工学的にも意義がある。近年もチェバ型定理の一般化は研究されており、本研究はその形式的基盤をmathlib4に提供する試みとして位置づけられる。
+
+    \end{body}
+
+    \section{本論文の構成}
+    \begin{body}
+        \indent  第$2$章でLean4について解説し、第$3$章でチェバの定理とアフィン幾何の関連を議論し、第$4$章で$2$次元チェバをどのように一般化してmathlib4 に追加するかを考える。第$5$章で実際の実装の詳細を見る。
+    \end{body}
+
+
+    % =========================================================
+    \chapter{Lean4による形式化}
+    % =========================================================
+    \section{形式言語の概要}
+    \begin{body}
+      \indent 自然言語の主張はさまざまな点で曖昧さを含む。定義が省略されていたり、暗黙の前提があったり、同じ記号が別の意味を持っていたりすることで本来したいはずの主張が伝わらないことや別の意味で解釈されてしまうこともある。
+
+      \indent これを解決するために用いられるのが\emph{形式言語}と呼ばれる定義が厳密に定まった言語体系であり、自然言語の文を形式言語に翻訳する作業は\emph{形式化}と呼ばれる。一度形式化された文章は、読み手がその形式の定義を正確に把握している限り、いつ誰がどこで読んでも意味が一意に定まる。これはコンピュータが文章を読む場合も例外ではない。この形式言語の文章をどう解釈しどう推論するかも含めて厳密に定義したものを論理体系と呼ぶ。
+
+      \indent 一方数学とは、過去の数学者の成果の積み重ねからなる学問である。数学的主張は、他者に共有され、検証され、再利用される形で後世に伝え残されてはじめて真価を発揮する。このとき、時代や場所、読み手によって意味や解釈が揺れることは望ましくない。まさに形式言語の特徴が最大限活かされる分野の一つである。現代数学は集合論を一階述語論理で公理化した論理体系（主にZFやZFC）を基礎として用いて構築されことが多い。
+
+      \indent しかし一度考え直してみると、数学を展開する言語は必ずしも一階述語論理に限る必要はない。一階述語論理は確かに人間が数学を理解する上で相性のいい形式言語の一種かもしれない。形式言語の中では比較的読みやすく、また歴史的に標準化されているため慣れてもいる。しかし本来、言語は読み手と目的に最適化することで意味伝達という言語本来の役割を最大限発揮する。伝えたい意味内容に対し、読み手と目的を明確にして最適な形式言語を選択することが重要となる。
+
+      \indent その一階述語論理の代替案の一つとして挙げられるのが型理論である。
+      
+      \indent 型理論とは、命題を型、証明をその型の項として表現するという特徴を持った論理体系である。集合論において全ての数学的対象が集合であるように、型理論において全ての数学的対象は型を持つ。厳密な定義は付録にまとめた。たとえば命題 $P$ の証明は $p:P$（pは型Pの項）という形で与えられる。項$p$を構築する厳密な規則が用意されているため、その規則に従っているかを機械的に確認する作業を通して証明の正しさを検証できる。コンピュータにとって検証のしやすい論理体系と言える。
+
+    \end{body}
+
+    \section{証明支援系の概要}
+    \begin{body}
+        \indent 証明支援系とは、数学の定義・定理・証明を形式言語で記述し、その証明が公理と推論規則に照らして正しいかを機械的に検証するためのソフトウェアである。このソフトウェアの目的は「証明を自動で発見する」ことよりも、「与えられた証明が正しいことを厳密に検査する」ことであり、最終的に検証を通過したものだけが受理される点が特徴である。
+
+        \indent 証明支援系には基礎となっている形式言語の種類に応じて複数の系統がある。代表的なものとして、依存型理論に基づくLeanやCoq（現在Rocqに改名）、高階論理系のIsabelle、HOLなどが存在し、目的に応じて使い分けられている。
+
+        \indent この技術は応用面では、まずソフトウェアの形式検証に用いられる。ソフトウェアは各々が仕様という設計目標を持つ。この仕様を数学的な命題として書き下すことで、実装されたプログラムがその仕様を満たすか否かという問題を、数学的な真偽判定の問題に帰着させることができる。挙動をあらかじめ検証しておくことで、信頼性の高い堅牢なソフトウェア開発が可能となる。
+
+        \indent また近年、証明支援系はLLMとも結びつき始めている。LLMはIMO 2025(国際数学オリンピック)において金メダル基準相当の成績に達したとする報告も出ており\cite{DeepMindIMO2025}、自然言語推論の性能が飛躍的に向上している。一方で、もっともらしいが誤りを含む出力（ハルシネーション）は依然としてLLMの課題である。
+        しかし、近年注目されている定理証明器を統合した枠組みでは、自然言語の解答案全体または一部を形式化して検証し、失敗時にはフィードバックにより解答を再生成するというループが可能となる。そのため、形式検証が及ぶ範囲についてはハルシネーションを大幅に抑制でき、結果として出力全体に対するハルシネーションの頻度も抑えられる。これは、ハルシネーション自体を抑えるのではなく正確な解答を返すまで出力を繰り返させるという発想の転換である
+        （下図参照、問題文の形式化や自然言語への説明生成には依然として誤りが入りうる）。よって、「形式検証の及ぶ範囲を拡大する」、「問題文の形式化精度を向上させる」ことで生成AIの数学力は向上すると考えられており、研究が盛んに行われている。
+
+    \end{body}
+
+    \begin{tikzpicture}
+        %========================
+        % 共通
+        %========================
+        \pgfmathsetlengthmacro{\Span}{0.90*\linewidth}
+      
+        \pgfmathsetlengthmacro{\TopY}{0pt}
+        \pgfmathsetlengthmacro{\BotY}{-3.5cm}
+      
+        \coordinate (TopL) at (-0.5*\Span,\TopY);
+        \coordinate (TopR) at ( 0.5*\Span,\TopY);
+        \coordinate (BotL) at (-0.5*\Span,\BotY);
+        \coordinate (BotR) at ( 0.5*\Span,\BotY);
+      
+        %========================
+        % 上段
+        %========================
+        \tikzset{
+          box/.style={
+            rectangle, draw, thick,
+            text width=3.0cm,
+            minimum height=1.0cm,
+            align=center, font=\small,
+            inner sep=2pt
+          },
+          myarrow/.style={->, >=Stealth, thick, shorten <=2pt, shorten >=2pt},
+          danger/.style={box, fill=red!20},
+        }
+      
+        \node[box]    (nlProblem)   at ($(TopL)!0.00!(TopR)$) {自然言語\\問題};
+        \node[box] (nlReasoning) at ($(TopL)!0.42!(TopR)$) {自然言語\\推論};
+        \node[box] (nlAnswer)    at ($(TopL)!0.84!(TopR)$) {自然言語\\解答};
+      
+        \draw[myarrow] (nlProblem) -- (nlReasoning);
+        \draw[myarrow] (nlReasoning) -- (nlAnswer);
+      
+        \node[above=3mm of nlProblem] {\bfseries 従来の自然言語推論};
+      
+        %========================
+        % 下段
+        %========================
+        \tikzset{
+          boxS/.style={
+            rectangle, draw, thick,
+            text width=1.85cm,
+            minimum height=0.72cm,
+            align=center,
+            font=\scriptsize,
+            inner sep=2pt
+          },
+          dangerS/.style={boxS, fill=red!20},
+          safeS/.style={boxS, fill=green!20},
+          myarrowS/.style={->, >=Stealth, thick, shorten <=2pt, shorten >=2pt}
+        }
+      
+        \node[boxS]    (flProblemNl) at ($(BotL)!0.00!(BotR)$) {自然言語\\問題};
+        \node[safeS]   (flProblem)   at ($(BotL)!0.21!(BotR)$) {形式言語\\問題};
+        \node[safeS]   (flReasoning) at ($(BotL)!0.42!(BotR)$) {形式言語\\推論};
+        \node[safeS]   (flAnswer)    at ($(BotL)!0.63!(BotR)$) {形式言語\\解答};
+        \node[boxS] (finalAnswer) at ($(BotL)!0.84!(BotR)$) {自然言語\\解答};
+      
+        \draw[myarrowS] (flProblemNl) -- (flProblem);
+        \draw[myarrowS] (flProblem)   -- (flReasoning);
+        \draw[myarrowS] (flReasoning) -- (flAnswer);
+        \draw[myarrowS] (flAnswer)    -- (finalAnswer);
+
+        \begin{pgfonlayer}{background}
+            \node[draw, thick, inner sep=2pt, rounded corners=2pt, fit=(flProblem)(flReasoning)(flAnswer), green, label={[font=\scriptsize]above:ハルシネーションを抑制}] (flBigBox) {};
+        \end{pgfonlayer}
+      
+        \draw[myarrowS, dashed]
+          (flReasoning.south) .. controls +(0,-0.8) and +(0,-0.8) ..
+          node[pos=0.55, right, font=\tiny, xshift=-2mm, yshift=-2mm] {検証失敗}
+          (flProblem.south);
+      
+        \node[above=3mm of flProblemNl] {\bfseries 形式検証統合推論};
+      
+    \end{tikzpicture}
+      
+    \begin{body}
+      \indent 上記を踏まえると本稿の目的は、\emph{数学という体系（特にチェバの定理）を証明支援系を通してコンピュータに検証してもらうために適切な形式言語を選択しコンピュータに伝達すること}である。
+
+      \indent この手段として私はLean4という言語を選択した。
+    \end{body}
+
+    \section{Lean4の概要}
+    \begin{body}
+      \indent Lean4は、依存型理論の一種CIC（Constructive Inductive Calculus）を基礎理論とする、プログラミング言語であり証明支援系でもある。2021年にLean3を改良して生まれた新しい言語であるが、両者に互換性がないため、現在Lean3からLean4への翻訳が進められている。
+
+    \end{body}
+
+    \subsection{Lean4の仕様}
+    項モード、tacticモード
+
+
+    \subsection{Lean4の基本的な概念}
+
+    \begin{body}
+
+    \end{body}
+
+    % =========================================================
+    \chapter{チェバの定理とアフィン空間}
+    % =========================================================
+    \begin{body}
+      \indent チェバの定理とは高校数学でもよく登場することの多い、初等幾何における重要な定理の一つである。
+
+      \indent 本章ではこのチェバの定理の詳細と、チェバの定理が展開されるアフィン空間の性質について議論する。
+    
+    \end{body}
+
+    \section{チェバの定理の有名な形}
+
+    \begin{body}
+      \indent 高校の教育課程において、チェバの定理は以下の形で紹介されることが多い。
+    \end{body}
+
+    \begin{theorem}[チェバの定理（$2$次元）]
+        三角形$\triangle ABC$の各辺$BC, CA, AB$またはその延長線上にそれぞれ点$D, E, F$をとる（頂点とは異なる）。
+        このとき、$3$直線$AD, BE, CF$が$1$点で交わるための必要十分条件は、
+        \[
+            \frac{BD}{DC} \cdot \frac{CE}{EA} \cdot \frac{AF}{FB} = 1
+        \]
+        が成り立つことである。
+    \end{theorem}
+
+    \begin{remark}
+      この定理中で登場する語彙は初等幾何的な高校の学習課程内の意味であり、敢えて定義しない。
+    \end{remark}
+    
+    \begin{body}
+      \indent 上記のチェバの定理の主張には、一見すると線分の長さ（BD,DC等）が現れるため、ユークリッド幾何に依存する定理のように見えるかもしれない。
+
+      \indent 実際いくつかの教科書では教育的配慮によって敢えてユークリッド空間を明示して紹介されていることもある。
+
+      \indent しかし、実際にはこの定理の主張は線分の長さの比（$\dfrac{BD}{DC}$ 等）のみで記述されている。
+
+      \indent これらの比は後述するようにアフィン幾何の概念であるため、チェバの定理は本質的にアフィン幾何の結果である。
+    \end{body}
+
+    \section{概念の定義}
+    \begin{body}
+      \indent まず今後の議論で登場する、数学的概念を定義する。
+
+      \indent 定義の多くは mathlib4 の Mathlib/LinearAlgebra/AffineSpace に整合するように採用した。ただし、後に示す定理の主張を表現しやすいように、いくつかは説明の都合上あえて冗長に記述している。
+    \end{body}
+
+    \begin{definition}[アフィン空間]
+      環 $k$（体でなくともよい）と $k$-加群 $V$ を考える。
+      このとき $P$ が $V$ 上の（$k$ に関する）\emph{アフィン空間}であるとは、次の2つの写像が存在し、以下の公理を満たすことをいう：
+      \[
+      \dotplus :\; P\times V \ni (p,v) \mapsto p \dotplus v \in P
+      \qquad
+      \dotminus:\; P\times P \ni (p,q) \mapsto q \dotminus p \in V
+      \]
+      \begin{theoremitemize}[leftmargin=3.5em, topsep=2pt, partopsep=0pt, itemsep=0pt, parsep=0pt]
+        \item[\hspace*{5em}\textbf{公理1}] 任意の $p\in P$ と $v,w\in V$ について
+          \[
+            (p\dotplus v)\dotplus w = p\dotplus (v+w).
+          \]
+        \item[\hspace*{5em}\textbf{公理2}] 任意の $p,q\in P$ について
+        \[
+          (p\dotminus q)\dotplus q = p
+        \]
+        \item[\hspace*{5em}\textbf{公理3}] 任意の $p\in P$ と $v\in V$ について
+        \[
+          (p\dotplus v)\dotminus p = v
+        \]
+      \end{theoremitemize}
+      アフィン空間$P$の元を\emph{点}と呼ぶ。
+  \end{definition}
+  
+  \begin{remark}[注意：点同士の和は一般に定義されない]
+    アフィン空間とは、非公式には「原点を忘れたベクトル空間」と説明されることが多い。
+    上の定義で与えられるのは「点 $p\in P$ に加群の元 $v\in V$ を足す演算 $p\dotplus v$」と「2点 $p,q\in P$ の差から加群の元を作る演算$q\dotminus p$」である。
+    ベクトル空間の基本的な演算である「$p,q\in P$ の和$p+q$」や「スカラー倍$\lambda p$」に相当する演算は、アフィン空間中そのままでは定義されない。
+  \end{remark}
+
+  \begin{remark}[注意 : $V$に$k$-加群が必要な理由]
+    純粋なアフィン空間にはスカラーは必要なく$V$は加法群であれば良い。しかし以降導入するアフィン結合や重心座標を定義する場合、スカラーが必要になるため$k$-加群を仮定している。
+  \end{remark}
+  
+  \vskip\baselineskip
+  
+  \begin{abbreviation}[加法・減法（アフィン空間）]
+    以下、簡単のため$\dotplus$は$+$、$\dotminus$は$-$と表す。
+  \end{abbreviation}
+
+  \vskip\baselineskip
+  
+  \begin{definition}[アフィン独立]
+    アフィン空間 $P$ の点族 $p:\iota\to P$ が \emph{アフィン独立}であるとは，
+    任意の $i\in\iota$ 、有限集合 $F\subseteq\iota$ 、$c_j\in k$に対し、
+    \[
+      \sum_{j\in F\setminus\{i\}} c_j\,(p(j)-p(i)) = 0
+      \qquad\Longrightarrow\qquad
+      \forall j\in F\setminus\{i\},\ c_j=0
+    \]
+    が成り立つことをいう．
+  \end{definition}
+
+  % \begin{definition}[アフィン空間の次元（有限次元）]
+  %     アフィン空間 $P$ が \emph{$n$次元}であるとは，空間中で取れるアフィン独立な点の最大個数が$n+1$個であることをいう．このとき $\dim P = n$ と書く．
+  % \end{definition}
+
+  % \begin{remark}[注意：一般のアフィン空間には次元を定義できない]
+  %     上の定義は，アフィン独立な点の最大個数が有限である場合にのみ用いることができる。
+  %     無限次元を許す一般のアフィン空間ではアフィン独立集合を有限個で抑えることができないため「アフィン独立な点の最大個数」という量そのものが存在しない。
+  %     また、最大のアフィン独立集合の存在を保証するにはZornの補題($⇔$選択公理)が必要であり，この成立を仮定しない集合論の体系では次元が定義不能となる。
+  %     $k$が体であり、$V$がベクトル空間となる時は特別に$P$の次元が一般に定義でき、$dim P = dim V$となる。
+  % \end{remark}
+
+  % n-simplexについての定理ということが言えれば、次元という概念を表に出さなくていいかも
+
+  \begin{definition}[アフィン結合]
+      アフィン空間 $P$ の点族 $p:\iota \to P$ と有限集合 $F\subseteq \iota$ をとる．
+      $\lambda : F \to k$ が
+      \[
+          \sum_{i\in F}\lambda(i)=1
+      \]
+      を満たすとき，基準点$p(j)(j\in F)$を用いて
+      \[
+          p(j)+\sum_{i\in F}\lambda(i)\,(p(i)-p(j))
+      \]
+      の操作で新たな点を定められる。
+      この点を定める操作を\emph{アフィン結合}、各$\lambda(i)$を\emph{アフィン結合の重み}と呼ぶ。
+  \end{definition}
+
+  \begin{abbreviation}[アフィン結合]
+    簡単のため以下では
+    \[
+        p = \sum_{i\in F}\lambda(i)\, p(i)
+    \]
+    と略記する。
+    これは点の和の形になっているため、本来はアフィン空間中で定義されない演算を用いた形の略記であることに留意する。
+  \end{abbreviation}
+
+  \begin{definition}[アフィン包]
+      アフィン空間 $P$ の点族 $p:\iota \to P$ と有限集合 $F\subseteq \iota$ に対し，
+      $P|_F$のアフィン結合で表せる点全体の族,すなわち
+      \[
+      \AffHull(p,\lambda,F)
+      :=\left\{\,
+      \sum_{i\in F}\lambda(i) p(i)
+      \ \middle|\
+      \lambda : F \to k,\ \sum_{i\in F}\lambda(i)=1
+      \,\right\}.
+      \]
+      この集合 $\AffHull(p,\lambda,F)$ を $p|_F$の\emph{アフィン包}と呼ぶ。
+  \end{definition}
+
+  \begin{definition}[凸包 / 単体]
+      アフィン空間 $P$ の点族 $p:\iota \to P$ と有限集合 $F\subseteq \iota$ に対し，
+      \[
+          \left\{
+              \sum_{i\in F} \lambda(i)\,p(i)
+              \ \middle|\ 
+              \lambda:F\to k,\ \lambda(i)\ge 0,\ \sum_{i\in F}\lambda(i)=1
+          \right\}
+      \]
+      で表される点の集合を$p|_F$の\emph{凸包}と呼ぶ。
+      または
+      すなわち、$p|_F$のアフィン包の非負係数点のみからなる。
+  \end{definition}
+
+  \begin{definition}[単体]
+      点族 $p:\iota \to P$ と有限集合 $F\subseteq \iota$ をとる．
+      $p|_F$ がアフィン独立であるとき，
+      $p|_F$の凸包を \emph{$(|F|-1)$-単体}と呼ぶ．
+  \end{definition}    
+
+  \begin{example}
+      $F$が$n+1$点集合の時、その$n+1$点から定まる族の凸包を$n$-単体と呼ぶ。
+      特に異なる3点A,B,Cが定める族は$2$-単体であり、\emph{三角形ABC}と呼び、$\triangle ABC$と表す。
+  \end{example}
+
+  \begin{definition}[重心座標]
+      点族 $p:\iota \to P$ と有限集合 $F\subseteq \iota$ について，
+      $p|_F$ がアフィン独立であるとする．
+      $\{p(i)\mid i\in F\}$の\emph{アフィン包}から任意に点qを選ぶ時、
+      ただ一つの重み $\lambda:F\to k$ が存在して
+      \[
+          q=\sum_{i\in F}\lambda(i)\,p(i),\qquad \sum_{i\in F}\lambda(i)=1
+      \]
+      を満たす．この $\lambda$ を $q$ の（$p|_F$ に関する）\emph{重心座標}と呼ぶ．
+  \end{definition}
+
+  \begin{example}
+      \indent 特に$\triangle ABC$の場合、任意の点$P$は
+      $P = \alpha A + \beta B + \gamma C$（$\alpha + \beta + \gamma = 1$）
+      と表され、$(\alpha, \beta, \gamma)$が$P$の重心座標である。
+  \end{example}
+
+
+  \begin{definition}[面]
+      $S$ を $n$-単体とする．
+      部分集合 $s\subseteq F$ に対し，
+      $\{p(i)\mid i\in s\}$の凸包を \emph{$S$ の面}という．
+      特に $|s|=k+1$ のとき，その面は$k$-単体となり、それを \emph{$k$-面}という．
+  \end{definition}
+
+  \begin{example}
+      $\triangle ABC$の場合、$0$-面は頂点、$1$-面は辺、$2$-面は$\triangle ABC$の内部全体である。
+      境界は常に含む。
+  \end{example}
+  
+  \begin{definition}[対向面 / ファセット]
+      $S$ を $n$-単体とする．
+      $p(i)$（$i\in F$）に対して，
+      $F\setminus\{i\}$ が定める $(n-1)$-面を\emph{$p(i)$の対向面またはファセット}という．
+  \end{definition}    
+  
+  \begin{example}
+      $\triangle ABC$において、頂点$A$の対向面は辺$BC$である。
+      $n$-単体の各頂点に対し、その頂点を含まない$n-1$-面が対向面として一意に定まる。
+  \end{example}
+
+  \begin{definition}[共点する]
+      有限本の直線または線分が1点で交わるとき、それらは\emph{共点する}という。
+  \end{definition}
+  
+  \begin{definition}[チェビアン]
+      $S$ を $n$-単体とし，$i\in F$ とする．
+      頂点 $p(i)$ ($i\in F$)を通る図形の，その対向面（またはその延長）との交わりを
+      $p(i)$ に関する \emph{チェビアン}と呼ぶ．
+      特に、$n$-単体のチェビアンを\emph{$n$-チェビアン}と呼ぶ
+  \end{definition}    
+  
+  \begin{definition}[チェビアンの足]
+      チェビアンと対向面またはその延長との交わりを \emph{チェビアンの足}という．
+  \end{definition}
+
+  \begin{remark}
+      以下で$2$-チェビアンの場合等を考えるため、チェビアンの足は点とは限らない。
+  \end{remark}
+
+  \begin{body}
+    \indent 上記の概念を用いてチェバの定理($2$次元)をアフィン空間の言葉で書き下す。
+  \end{body}
+
+  \section{アフィン空間中の補題}
+  \begin{lemma}[]
+    % TODO
+  \end{lemma}
+  
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+    \begin{body}
+      \indent 上記からチェバの定理がアフィン幾何における主張であることがわかった。
+
+      \indent この結果は本稿で作成するモジュールをmathlib4のどのディレクトリのファイルに追加するかを決定する際に重要となる。
+
+      \indent 一般化を行うときもユークリッド幾何の計量の概念は避けることが必要である。
+
+    \end{body}
+
+
+
+    \begin{body}
+        \indent 形式言語であるLean4に翻訳するために、一般化の主張を形式的に捉え直すことが必要となる。
+    \end{body}
+
+    \section{形式的な一般化}
+
+
+    \begin{body}
+        \indent 形式的には定理とは「ある仮定・前提のもとで推論規則を通して得られる結論の命題」のことで、どんな理論体系でもこの流れは共通である。
+
+        \indent 「定理を主張する上であらかじめ決めておく命題」という意味で似ている仮定と結論であるが、本稿では以下のように区別する。
+
+        \begin{bodydescription}[leftmargin=5em, style=nextline]
+            \item[\hspace*{2em}前提] 定理の主張内に現れる記号の意味を確定させるために必要な命題
+            \item[\hspace*{2em}仮定] 主張したい定理が成り立つ世界観を決定するのに必要な、前提以外の命題
+        \end{bodydescription}
+
+        \indent また、定理$P⇒Q$の一般化とは「定理の主張を弱める」ことを意味することであるから、以下の方法が考えられる。
+    \end{body}
+
+    \begin{itemize}[leftmargin=3.5em]
+        \item $P$ を弱め、$P'⇒Q$ となる $P'$ を探す。
+        \item $Q$ を強め、$P⇒Q'$ となる $Q'$ を探す。
+        \item あるいは上記二つを組み合わせて $P'⇒Q'$ となる $P'$ と $Q'$ を探す。
+    \end{itemize}
+
+    \begin{body}
+        \indent 一般化と聞くと、仮定と結論に目が向くことが多いが、前提を変えるという一般化もあることに留意する。
+
+        \indent 以下では,
+        
+        前提（Assumption）を (A1),(A2),\dots \par
+        仮定（Hypothesis）を (H1),(H2),\dots \par
+        結論（Conclusion）を (C1),(C2),\dots \par
+        のようにラベル付けして表す。
+
+        \indent そのもとでチェバの定理を眺めてみる。
+    \end{body}
+
+
+    \section{チェバの定理の言い換え}
+
+    \begin{body}
+        \indent 上記の概念を用いて、チェバの定理を言い換えて一般化の方針を考える上での見通しをよくする。
+
+        \indent 定理の背後の暗黙の前提も含め、一般化を見据えて記述するため多少冗長となっている。
+
+    \end{body}
+
+    \begin{theorem}[チェバの定理の言い換え($2$次元)]
+        \noindent\textbf{\\前提：}\par
+        \begin{theoremenumerate}[label=(A\arabic*), leftmargin=4em, topsep=2pt, partopsep=0pt, itemsep=0pt, parsep=0pt]
+            \item $k = R$
+            \item $V$ は $k$-加群
+            \item $P$ は $V$ 上のアフィン空間とする。
+            \item $\iota = \{0,1,2\}$は添字集合である。
+            \item アフィン独立な点族 $p : \iota \to P$ をとる。
+            \item $s = \iota$ は空でない(自明)
+        \end{theoremenumerate}
+
+        以下の2つの命題は同値である。
+        \begin{theoremitemize}[leftmargin=4em, topsep=2pt, partopsep=0pt, itemsep=0pt, parsep=0pt]
+            \item AD,BE,CFが共点する
+            \item $\dfrac{v}{u}\,\dfrac{w}{x}\,\dfrac{p}{q} = 1$ が成立
+        \end{theoremitemize}
+    \end{theorem}
+
+    \vskip\baselineskip
+
+    \begin{body}
+        \indent 辺の長さの比に見えていたものは重心座標で現れる係数の比であり、
+            \[
+                \dfrac{BD}{DC} := \dfrac{v}{u},\qquad
+                \dfrac{CE}{EA} := \dfrac{w}{x},\qquad
+                \dfrac{AF}{FB} := \dfrac{p}{q}
+            \]
+        である。
+    \end{body}
+
+    \vskip\baselineskip
+
+    \begin{remark}[チェバの定理のアフィン性]
+        チェバの定理の主張には、一見すると線分の長さ（$BD, DC$など）が現れるため、ユークリッド幾何に依存する定理のように見えるかもしれない。
+        しかし、実際には定理の条件は線分の長さの比$\dfrac{BD}{DC}$のみで記述されている。
+        これらの比はアフィン変換で不変であり、チェバの定理は本質的にアフィン幾何の結果である。
+    \end{remark}
+
+
+    % =========================================================
+    \chapter{チェバの定理の一般化と選定}
+    % =========================================================
+    \section{一般化の設計空間}
+
+    \begin{body}
+        \indent 上記の定式化を行うと定理が様々な観点から高次元一般化できることが見える。
+
+        \indent 例えば以下の観点が考えられる。
+
+        \begin{bodyitemize}
+            \item 2-単体をn-単体に一般化する
+            \item 2次元空間内をn次元空間内に一般化する。
+            \item 1-チェビアンを2-チェビアンで考えてみる。
+            \item チェビアンの足は対面上でなくて良い
+            \item 高次元一般化したときチェビアン・チェビアンの数は頂点数と同じである必要はない。
+        \end{bodyitemize}
+
+        \indent 実際に一般化したものとして以下のようなものが挙げられる。
+
+        \begin{bodydescription}
+            \item[\hspace*{1.5em}・候補A：周囲空間のみ高次元化, solopede] $n$次元アフィン空間に三角形を埋め込み、周囲の空間のみ高次元化する。$2$-単体の各頂点から対向する$1$-面に$1$-チェビアンを下ろした時の（$n$次元アフィン空間内の）共点する条件についての定理。定理の主張自体は2次元の時と大きく変わらない。
+            
+            \item[\hspace*{1.5em}・候補B：$n$単体版, solopede, 1-チェビアン] $n$-単体の各頂点から対向する$n-1$-面への$1$-チェビアンを下ろした時の共点する条件についての定理。
+            
+            \item[\hspace*{1.5em}・候補C：$n$単体版, solopede, 2-チェビアン] $n$-単体の各頂点から対向する$n-1$-面への$2$-チェビアンを下ろした時の共点する条件についての定理。
+            
+            \item[\hspace*{1.5em}・候補D：$n$単体版, multipede] $n$-単体の各頂点から対向する$k$-面（$1 \leq k \leq n-1$）への$1$-チェビアンを下ろした時の共点する条件についての定理。
+        \end{bodydescription}
+    \end{body}
+
+    \section{先行プロジェクトの紹介}
+    \begin{body}
+        過去にいくつかチェバの定理の形式化に関する先行研究が存在するので紹介する。
+    \end{body}
+    
+    \begin{bodydescription}
+        \item[\hspace*{1.5em}・Lean3時代の形式化] 
+            期間: $2021$年$12$月 〜 $2023$年$7$月\\
+            GitHub: \url{https://github.com/leanprover-community/mathlib3/pull/10632} \cite{mathlib3_ceva}
+            
+            Mantas Bakšys氏による試み。
+            $2$次元のチェバの定理のみを形式化しており、またユークリッド幾何の概念である距離を全面に出した証明となっており、mathlib4に追加するには一般性が足りないとして採用されなかった。
+        
+        \item[\hspace*{1.5em}・Aristotle.AI（Harmonic社）を用いた形式化]
+            期間: $2025$年$12$月 〜 $2026$年$1$月\\
+            GitHub: \url{https://github.com/leanprover-community/mathlib4/pull/33388} \cite{mathlib4_ceva_alexeev}
+            
+            Boris Alexeev氏による試み。
+            Harmonic社が提供するLeanプログラム用のAIサービスAristotle.AIを用いて形式化した。
+            全てのコードがLeanの機械検証を通過し、安全性が保証された。
+            しかし、$2$次元のチェバの定理のみを形式化しており、高次元への一般化は行われていなかったため、mathlib4に追加するには一般性が足りないとして採用されなかった。
+        
+        \item[\hspace*{1.5em}・$n$次元アフィン空間で汎用一般化された初の形式化]
+            期間: $2026$年$1$月 〜 $2026$年$1$月\\
+            GitHub: \url{https://github.com/leanprover-community/mathlib4/pull/33409} \cite{mathlib4_ceva_myers}
+            
+            Joseph Myers氏による試み。
+            過去の不十分な事例を踏まえて、$n$次元アフィン空間に一般化されたチェバの定理順方向を形式化した。
+            前提として$k$は環でよく、共点性の仮定から比の積の等式よりも強い係数比例条件を導いている。
+            おそらく現時点で最も一般性が高い形式化である。
+            2026/1/14 PR受理。
+    \end{bodydescription}
+
+    \section{本稿で扱う一般化の選定}
+    \begin{body}
+        本稿ではJoseph Myers氏の先行研究を引き継ぎ候補Bの方針の一般化を採用する。
+    \end{body}
+
+    
+
+    % =========================================================
+    \chapter{Lean4での実装}
+    % =========================================================
+
+    \section{設計}
+    \subsection{設計の問題点}
+    \begin{body}
+        \indent ライブラリに追加する定理は、元の定理の特徴を残しながら可能な限り一般化された汎用的な形であることが望ましい。
+        
+        \indent チェバの定理の大きな特徴として、上記で示したアフィンな結果であるという点の他に、必要十分性を主張する定理である点が挙げられる。
+        
+        \indent したがって、特別な場合として$2$次元のチェバの定理を導く必要十分性を主張する一般化チェバの定理を得ることが目標である。
+
+        \indent しかし、必要十分性を主張する定理は、前提を緩めるとその必要十分性自体が崩れる場合がある。実際（後述するように）、2次元チェバを順方向・逆方向それぞれでmathlib4により適した形で一般化すると、必要となる前提が一致しなくなる。つまり、順方向と逆方向に対して不要な仮定を置かない一般化を施すと"ある定理の表裏"ではなく、"前提が部分的に重なる二つの命題"になる。そのため得られた2つの定理から、一般化で得たい必要十分性を主張する定理は直接的には導かれなくなってしまう。
+
+    \end{body}
+
+    \subsection{設計方針と採用理由}
+    \begin{body}
+        \indent 順方向と逆方向を一般化した定理は$2$次元のチェバの定理の内容とはかなり異なる内容をそれぞれ主張することになる。とはいえ、不要な仮定を置かない汎用的な形で一般化された両者には、それぞれ独立した価値がある。
+
+        \indent 以上より、設計としては
+
+        \begin{bodyitemize}
+            \item 一般化された順方向の定理
+            \item 一般化された逆方向の定理
+        \end{bodyitemize}
+        \indent 以上の3つの定理（およびこれに加える補題も適宜追加する）を併置してmathlib4に追加するのが理にかなっている。
+
+    \end{body}
+
+    \section{追加する定理の主張と自然言語証明}
+
+    % \subsection{記号の定義}
+    % \begin{body}
+    %     \begin{bodyitemize}
+    %         \item $k$: 環
+    %         \item $V$: $k$-加群
+    %         \item $P$: $V$上のアフィン空間
+    %         \item $\iota$: 添字集合
+    %         \item $p: \iota \to P$
+    %         \item $s$: $\iota$の非空部分集合
+    %     \end{bodyitemize}
+    % \end{body}
+
+    \begin{theorem}[n-simplex におけるチェバの定理（共点または平行）]
+      \begin{theoremenumerate}[label=(P\arabic*), leftmargin=4em, topsep=2pt, partopsep=0pt,
+        itemsep=0pt, parsep=0pt]
+        \item $k$ は可換環である。
+        \item $V$ は $k$-加群であり，かつ加法群として可換群である。
+        \item $P$ は $V$ 上のアフィン空間である。
+        \item $\iota$ は有限集合で，$|\iota|=n+1$ を満たす（$n\ge 1$）。
+        \item アフィン独立な点族 $p:\iota\to P$ をとる（これを $n$-単体の頂点とみなす）。
+        \item 各 $i\in\iota$ に対し，対向面
+          \[
+            F_i := \mathrm{affineSpan}_k\{\,p(j)\mid j\in\iota,\ j\neq i\,\}
+          \]
+          を定め，点 $q(i)\in F_i$ をとる。
+      \end{theoremenumerate}
+      
+      このとき，次の二つの命題は同値である。
+      
+      \begin{theoremitemize}[leftmargin=4em, topsep=2pt, partopsep=0pt, itemsep=0pt, parsep=0pt]
+        \item[(A)] （共点または平行）
+        直線 $\ell_i := \mathrm{affineSpan}_k\{p(i),q(i)\}$（$i\in\iota$）について，
+        次が成り立つ：
+        \[
+          \Big(\exists r\in P,\ \forall i\in\iota,\ r\in \ell_i\Big)
+          \ \ \lor\ \
+          \Big(\forall i,j\in\iota,\ \ell_i\parallel \ell_j\Big).
+        \]
+        \item[(B)] （質量分布条件：符号付き重み）
+        ある写像（重み） $m:\iota\to k$ とある族 $\lambda:\iota\to k$ が存在して，
+        \[
+          \text{$m$ は零ではない}\quad(\exists i,\ m(i)\neq 0)
+        \]
+        かつ任意の $i\in\iota$ について
+        \[
+          \lambda(i)\neq 0,\qquad
+          \sum_{j\in\iota\setminus\{i\}} m(j)=\lambda(i),
+        \]
+        および
+        \[
+          q(i)=\mathrm{affineCombination}_k\bigl(p|_{\iota\setminus\{i\}},\ 
+            (j\mapsto m(j))\bigr)\ \text{を}\ \lambda(i)\ \text{で正規化したもの}
+        \]
+        が成り立つ（同値な無除算形として，任意の $i$ について
+        \[
+          \sum_{j\in\iota\setminus\{i\}} m(j)\,(p(j)-q(i))=0
+        \]
+        が成り立つ，と言ってよい）。
+      \end{theoremitemize}
+      \end{theorem}
+      
+
+    \subsection{順方向一般化}
+    \begin{theorem}[一般化チェバの定理(順方向)]
+        \noindent\textbf{\\前提：}\par
+        \begin{theoremenumerate}[label=(A\arabic*), leftmargin=4em, topsep=2pt, partopsep=0pt, itemsep=0pt, parsep=0pt]
+            \item $k$ は 環である。
+            \item $V$ は $k$-加群である。
+            \item $P$ は $V$ 上のアフィン空間である。
+            \item $dimV = n$である。
+            \item $\iota$ は添字集合である。
+            \item アフィン独立な点族 $p : \iota \to P$ をとる。
+            \item $s \subseteq \iota$ は空でない。
+            \item 各 $i\in s$ について，有限集合 $F_i\subseteq \iota$ と重み $w_i:\iota\to k$ が与えられ，
+            \[
+                i\in F_i,\qquad \sum_{j\in F_i} w_i(j)=1
+            \]
+            が成り立つ。
+            \item ある点 $p'\in P$ が存在し，各 $i\in s$ について
+            \[
+                p' \in \mathrm{line}\!\left(
+                p(i),\;
+                p(i)+\sum_{j\in F_i} w_i(j)\bigl(p(j)-p(i)\bigr)
+                \right)
+            \]
+            が成り立つ。
+        \end{theoremenumerate}
+        \noindent\textbf{\\仮定：}\par
+        \begin{theoremenumerate}[label=(A\arabic*), leftmargin=4em, topsep=2pt, partopsep=0pt, itemsep=0pt, parsep=0pt]
+            \item 点 $p' \in P$ が存在し、各 $i \in s$ について、$p'$ は2点 $p(i)$ と $p(i) + \sum_{j \in F_i} w_i(j)(p(j) - p(i))$ を結ぶ直線上に存在する：
+            \[
+                \forall i \in s, \quad p' \in \mathrm{line}\left(p(i), p(i) + \sum_{j \in F_i} w_i(j)(p(j) - p(i))\right).
+            \]
+        \end{theoremenumerate}
+
+        \noindent\textbf{\\結論：}\par
+        \begin{theoremenumerate}[label=(C\arabic*), leftmargin=4em, topsep=2pt, partopsep=0pt, itemsep=0pt, parsep=0pt]
+            \item ある重み $w' : \iota \to k$ と有限集合 $F' \subseteq \iota$ が存在して
+            \[
+            \sum_{j \in F'} w'(j) = 1
+            \]
+            を満たし、$p'$ は $p(i)$ を基準とするアフィン結合として
+            \[
+            p' = p(i) + \sum_{j \in F'} w'(j)\,\bigl(p(j) - p(i)\bigr)
+            \]
+            と書ける。
+            \item 各 $i \in s$ ごとにスカラー $r_i \in k$ が存在し、次が成り立つ：
+            \[
+                \forall i \in s, \quad \exists r_i \in k, \quad \forall j \in \iota, \quad r_i \cdot \mathbf{1}_{F_i \setminus \{i\}}(j) \cdot w_i(j) = \mathbf{1}_{F' \setminus \{i\}}(j) \cdot w'(j).
+            \]
+            （$\mathbf{1}_A$ は indicator 関数：$j \in A$ なら 1、そうでなければ 0。）
+        \end{theoremenumerate}
+    \end{theorem}
+
+    % \begin{itemize}
+    %     \item 
+
+
+    \begin{proof}
+        以後，(A4) の点族 $p:\iota\to P$ を固定する．また各 $i\in s$ に対し
+        \[
+          q_i \;:=\; p(i)+\sum_{j\in F_i} w_i(j)\bigl(p(j)-p(i)\bigr)
+        \]
+        とおく（これは (A6) により定義されている）．
+        
+        \medskip
+        \noindent\textbf{Step 1（直線上条件からパラメータ $r_i$ を得る）.}
+        (A7) より，ある $p'\in P$ が存在して
+        \[
+          \forall i\in s,\quad p'\in \mathrm{line}\bigl(p(i),q_i\bigr)
+        \]
+        が成り立つ．
+        直線 $\mathrm{line}(x,y)$ の定義（アフィン空間における $\mathrm{lineMap}$ の像）から，
+        各 $i\in s$ についてスカラー $r_i\in k$ が存在して
+        \[
+          p'=(1-r_i)\,p(i)+r_i\,q_i
+        \]
+        と書ける．
+        ここで用いたのは (A7) および「直線の定義に必要な構造」(A1)(A2)(A3) のみである．
+        
+        \medskip
+        \noindent\textbf{Step 2（$q_i$ をアフィン結合として展開）.}
+        (A6) の $\sum_{j\in F_i} w_i(j)=1$ を用いると，
+        \[
+          q_i
+          =p(i)+\sum_{j\in F_i} w_i(j)\bigl(p(j)-p(i)\bigr)
+          =\Bigl(1-\sum_{j\in F_i}w_i(j)\Bigr)p(i)+\sum_{j\in F_i}w_i(j)p(j)
+          =\sum_{j\in F_i}w_i(j)p(j).
+        \]
+        （ここでは (A6) と，加群・アフィン空間の演算の整合性 (A1)(A2)(A3) を使った．）
+        
+        従って Step 1 の式は
+        \[
+          p'=(1-r_i)\,p(i)+r_i\sum_{j\in F_i}w_i(j)p(j)
+        \]
+        となる．
+        
+        \medskip
+        \noindent\textbf{Step 3（各 $i$ に対し「係数関数」$c_i$ を定義）.}
+        各 $i\in s$ に対し，関数 $c_i:\iota\to k$ を
+        \[
+          c_i(j):=
+          \begin{cases}
+            r_i\,w_i(j) & (j\in F_i,\ j\neq i),\\
+            (1-r_i)+r_i\,w_i(i) & (j=i),\\
+            0 & (j\notin F_i)
+          \end{cases}
+        \]
+        で定める．
+        すると有限支えは $F_i$ に含まれ，かつ（(A6) を用いて）
+        \[
+          \sum_{j\in F_i}c_i(j)
+          =(1-r_i)+r_i\sum_{j\in F_i}w_i(j)
+          =(1-r_i)+r_i\cdot 1
+          =1.
+        \]
+        さらに Step 2 の式から
+        \[
+          p'=\sum_{j\in F_i}c_i(j)\,p(j)
+        \]
+        が従う．
+        この段で用いたのは Step 1（(A1)(A2)(A3)(A7)）と (A6) である．
+        
+        \medskip
+        \noindent\textbf{Step 4（(C1) の構成：$F',w'$ を 1つ選ぶ）.}
+        (A5) より $s$ は空でないので，ある $i_0\in s$ を取る（(A5) を使用）．
+        そして
+        \[
+          F':=F_{i_0},\qquad w':=c_{i_0}
+        \]
+        と定める．
+        Step 3（$i=i_0$）より
+        \[
+          \sum_{j\in F'}w'(j)=1,\qquad
+          p'=\sum_{j\in F'}w'(j)\,p(j)
+        \]
+        が成り立つので，これは
+        \[
+          p'=\mathrm{affComb}(F',p,w')
+        \]
+        という形に読み替えられる（定義）．
+        ゆえに (C1) が従う．
+        この段で用いたのは (A5) と Step 3（つまり (A6)(A7) と構造 (A1)(A2)(A3)）である．
+        
+        \medskip
+        \noindent\textbf{Step 5（(C2)：任意の $i$ について $w'$ と $c_i$ の一致を示す）.}
+        任意に $i\in s$ を取る．
+        Step 3 より $p'=\sum_{j\in F_i}c_i(j)p(j)$ かつ $\sum_{j\in F_i}c_i(j)=1$
+        また Step 4 より $p'=\sum_{j\in F'}w'(j)p(j)$ かつ $\sum_{j\in F'}w'(j)=1$
+        
+        ここで共通の有限集合として $G:=F'\cup F_i$ を取り，
+        $w',c_i$ を $G$ 上へ 0 で延長した係数（記号は同じにする）を考える．すると
+        \[
+          \sum_{j\in G}w'(j)=1,\quad \sum_{j\in G}c_i(j)=1,\quad
+          \sum_{j\in G}w'(j)p(j)=\sum_{j\in G}c_i(j)p(j)=p'.
+        \]
+        よって差を取ると
+        \[
+          \sum_{j\in G}\bigl(w'(j)-c_i(j)\bigr)=0,\qquad
+          \sum_{j\in G}\bigl(w'(j)-c_i(j)\bigr)p(j)=0.
+        \]
+        ここで (A4)（アフィン独立）を用いると，
+        上の 2条件を満たす係数はすべて 0 でなければならないから
+        \[
+          \forall j\in G,\quad w'(j)=c_i(j)
+        \]
+        が従う（この段で決定的に (A4) を使用）．
+        特に任意の $j\in\iota$ について $w'(j)=c_i(j)$ が成り立つ（$G$ の外では両方 0）
+        
+        最後に $c_i$ の定義（Step 3）を書き戻せば
+        \[
+          j\neq i \Rightarrow
+          w'(j)=
+          \begin{cases}
+            r_i\,w_i(j) & (j\in F_i),\\
+            0 & (j\notin F_i),
+          \end{cases}
+          \qquad\text{かつ}\qquad
+          w'(i)=(1-r_i)+r_i\,w_i(i)
+        \]
+        が得られ，これは (C2) の主張と同値である．
+        
+        \medskip
+        以上より (C1)(C2) が示された．
+        （使用した仮定：Step 1 で (A1)(A2)(A3)(A7),
+        Step 2 で (A6) と (A1)(A2)(A3),
+        Step 4 で (A5) と Step 3,
+        Step 5 で (A4) と Step 3--4）
+    \end{proof}
+
+    \subsection{逆方向一般化}
+    \begin{theorem}[一般化チェバの定理（逆方向）]
+        \noindent\textbf{\\前提：}\par
+        \begin{theoremenumerate}[label=(A\arabic*), leftmargin=4em, topsep=2pt, partopsep=0pt, itemsep=0pt, parsep=0pt]
+            \item $k$ は可換体である。
+            \item $V$ は $k$ 上の有限次元ベクトル空間で、$\dim V = n$ とする。
+            \item $P$ は $V$ 上のアフィン空間である。
+            \item 頂点集合を $\iota := \mathrm{Fin}(n+1)$ とし、点族 $p:\iota\to P$ はアフィン独立である
+            （したがって $p$ は $n$-simplex を与える）。
+            \item 各 $i\in\iota$ について、$i$ の反対側の面（facet）
+            \[
+              \Delta_i := \mathrm{conv}\{\,p(j)\mid j\in\iota,\ j\neq i\,\}
+            \]
+            上の点 $q_i\in \Delta_i$ を与える（チェビアンの足）。
+            \item 各 $i\in\iota$ と各 $j\in \iota\setminus\{i\}$ について、次で定まる（符号付き）
+            $(n-1)$-体積比を $a_{ij}\in k$ とする：
+            \[
+              a_{ij}
+              :=
+              \frac{\mathrm{Vol}_{n-1}\big(\mathrm{conv}(\{q_i\}\cup\{p(\ell)\mid \ell\neq i,\ \ell\neq j\})\big)}
+                   {\mathrm{Vol}_{n-1}\big(\mathrm{conv}(\{p(\ell)\mid \ell\neq i\})\big)}.
+            \]
+            （分母は facet の $(n-1)$-体積なので $0$ ではない。）
+            \item 各 $i$ について $a_{ii}:=0$ と定める。また $q_i\in\Delta_i$ により
+            \[
+              \sum_{j\in\iota} a_{ij} = 1
+              \qquad(\text{各 }i)
+            \]
+            が成り立つ（facet 上のバリセントリック係数＝体積比）。
+            \item （Ceva の体積比条件）$(n+1)\times(n+1)$ 行列 $B$ を
+            \[
+              B_{ij}:=
+              \begin{cases}
+                -1 & (i=j),\\
+                a_{ij} & (i\neq j)
+              \end{cases}
+            \]
+            で定めるとき、
+            \[
+              \det(B)=0
+            \]
+            が成り立つ。
+            \item （非退化条件：無限遠への退化排除）
+            (A8) の整合条件から得られる重み $w':\iota\to k$（後述の (C1) の $w'$）について
+            \[
+              \exists i\in\iota,\quad w'(i)\neq 0
+            \]
+            が成り立つ（必要ならより強く $\forall i,\ w'(i)\neq 0$ を仮定してよい）。
+            この条件は「交点が通常の点として $P$ 内に存在し、平行方向への退化を排除する」ことを保証する。
+        \end{theoremenumerate}
+
+        \noindent\textbf{\\仮定：}\par
+        \begin{theoremenumerate}[label=(A\arabic*), leftmargin=4em, topsep=2pt, partopsep=0pt, itemsep=0pt, parsep=0pt]
+            \item あ
+        \end{theoremenumerate}
+
+        \noindent\textbf{\\結論：}\par
+        \begin{theoremenumerate}[label=(C\arabic*), leftmargin=4em, topsep=2pt, partopsep=0pt, itemsep=0pt, parsep=0pt]
+            \item ある点 $p'\in P$ と、ある重み $w':\iota\to k$ が存在して
+                \[
+                    \sum_{j\in\iota} w'(j)=1,
+                    \qquad
+                    p'=\sum_{j\in\iota} w'(j)\,p(j)
+                \]
+                が成り立つ。さらに (A9) により $p'$ は“無限遠ではない通常の点”として確定する。
+            \item 各 $i\in\iota$ について、$p'$ は頂点 $p(i)$ と足 $q_i$ を結ぶ直線（チェビアン）上にある：
+                \[
+                    \forall i\in\iota,\quad
+                    p' \in \mathrm{line}\big(p(i),\,q_i\big).
+                \]
+                したがって、与えた $n+1$ 本のチェビアンは$p'$ で共点する。
+        \end{theoremenumerate}
+    \end{theorem}
+
+    \begin{proof}
+        (A4)より，$p:\iota\to P$ はアフィン独立であるから，各 $i\in\iota$ に対し
+        \[
+        \Delta_i=\mathrm{conv}\{\,p(j)\mid j\in\iota,\ j\neq i\,\}
+        \]
+        は $p$ が張る $n$-simplex の facet を与える．(A5)より $q_i\in\Delta_i$ が与えられている．
+        
+        (A6)(A7)より，$a_{ii}=0$ かつ $\sum_{j\in\iota}a_{ij}=1$ が成り立つので，$q_i$ は facet の頂点に関するアフィン結合として
+        \[
+        q_i=\sum_{j\in\iota} a_{ij}\,p(j)
+        \]
+        と書ける（ここで $a_{ii}=0$ により $p(i)$ の係数は $0$ である）．
+        
+        つぎに (A8) の行列 $B$ を用いる．(A1)より $k$ は体なので線形代数が通常通り使え，(A8)の $\det(B)=0$ から
+        \[
+        \exists x:\iota\to k,\quad x\neq 0,\quad Bx=0
+        \]
+        が従う．このとき成分表示で
+        \[
+        \forall i\in\iota,\qquad -x(i)+\sum_{j\neq i} a_{ij}x(j)=0
+        \tag{$\ast$}
+        \]
+        が成り立つ．
+        
+        ここで非退化条件 (A9) を用いて，正規化可能な核ベクトルを取る：
+        すなわち，$Bx=0$ を満たす $x\neq 0$ であって $\sum_{j\in\iota}x(j)\neq 0$ となるものを選ぶ（(A9) は「無限遠への退化を排除し，この正規化が可能である」ことを保証するために課す）．
+        そして
+        \[
+        w'(j):=\frac{x(j)}{\sum_{\ell\in\iota}x(\ell)}\qquad(j\in\iota)
+        \]
+        と定めると，(A1)より割り算ができ，直ちに
+        \[
+        \sum_{j\in\iota}w'(j)=1
+        \]
+        が成り立つ．(A2)(A3)よりアフィン結合が定義できるので
+        \[
+        p':=\sum_{j\in\iota} w'(j)\,p(j)
+        \]
+        と置けば，(C1) が得られる．
+        
+        残りは (C2) である．各 $i\in\iota$ について
+        \[
+        t_i:=1-w'(i)
+        \]
+        とおく．(A7)より $a_{ii}=0$ なので，$j\neq i$ に対し
+        \[
+        t_i\,a_{ij}=(1-w'(i))a_{ij}.
+        \]
+        一方，$Bx=0$ の関係 $(\ast)$ を $w'$ に移すと（$w'$ は $x$ のスカラー倍なので依然として $Bw'=0$），
+        \[
+        -w'(i)+\sum_{j\neq i}a_{ij}w'(j)=0
+        \]
+        が成り立つ．この等式と $\sum_j a_{ij}=1$ を合わせると，$j\neq i$ に対して
+        \[
+        w'(j)=t_i\,a_{ij}
+        \quad\text{および}\quad
+        w'(i)=1-t_i
+        \]
+        が同時に満たされる（同値変形による）．よって
+        \[
+        \sum_{j\in\iota} w'(j)p(j)
+        =
+        (1-t_i)p(i)+t_i\sum_{j\in\iota} a_{ij}p(j)
+        =
+        (1-t_i)p(i)+t_i q_i
+        \]
+        となる．左辺は $p'$ の定義そのものだから
+        \[
+        p'=(1-t_i)p(i)+t_i q_i \in \mathrm{line}\bigl(p(i),q_i\bigr)
+        \]
+        が従う（ここで直線のパラメータ表示に (A1)(A2)(A3) を用いた）．$i$ は任意であったから，
+        \[
+        \forall i\in\iota,\quad p'\in \mathrm{line}\bigl(p(i),q_i\bigr)
+        \]
+        すなわち (C2) が成り立つ．以上より，すべてのチェビアンは一点 $p'$ で共点する．
+    \end{proof}
+
+    \subsection{必要十分形一般化チェバの定理}
+    \begin{theorem}[必要十分形一般化チェバの定理]
+        \noindent\textbf{\\前提：}\par
+        \begin{theoremenumerate}[label=(A\arabic*), leftmargin=4em, topsep=2pt, partopsep=0pt, itemsep=0pt, parsep=0pt]
+            \item $k$ は可換体である。
+            \item $V$ は $k$ 上の有限次元ベクトル空間で，$\dim V=n$ とする。
+            \item $P$ は $V$ 上のアフィン空間である。
+            \item 頂点集合を $\iota:=\mathrm{Fin}(n+1)$ とし，点族 $p:\iota\to P$ はアフィン独立である
+            （したがって $p$ は $n$-simplex を与える）。
+            \item 各 $i\in\iota$ について，$i$ の反対側の面（facet）
+            \[
+              \Delta_i := \mathrm{conv}\{\,p(j)\mid j\in\iota,\ j\neq i\,\}
+            \]
+            上の点 $q_i\in \Delta_i$ を与える（チェビアンの足）。
+            \item 各 $i\in\iota$ と各 $j\in\iota\setminus\{i\}$ について，次で定まる（符号付き）
+            $(n-1)$-体積比を $a_{ij}\in k$ とする：
+            \[
+              a_{ij}
+              :=
+              \frac{\mathrm{Vol}_{n-1}\big(\mathrm{conv}(\{q_i\}\cup\{p(\ell)\mid \ell\neq i,\ \ell\neq j\})\big)}
+                   {\mathrm{Vol}_{n-1}\big(\mathrm{conv}(\{p(\ell)\mid \ell\neq i\})\big)}.
+            \]
+            （分母は facet の $(n-1)$-体積なので $0$ ではない。）
+            \item 各 $i$ について $a_{ii}:=0$ と定める。また $q_i\in\Delta_i$ により
+            \[
+              \sum_{j\in\iota} a_{ij} = 1
+              \qquad(\text{各 }i)
+            \]
+            が成り立つ（facet 上のバリセントリック係数＝体積比）。
+            \item $(n+1)\times(n+1)$ 行列 $B$ を
+            \[
+              B_{ij}:=
+              \begin{cases}
+                -1 & (i=j),\\
+                a_{ij} & (i\neq j)
+              \end{cases}
+            \]
+            で定める。
+            \item （非退化条件）$Bx=0$ を満たす $0\neq x:\iota\to k$ で $\sum_{j\in\iota}x(j)\neq 0$ となるものが存在する。
+            \\
+            \textnormal{（注意：これは「(A8) の結果として得られる $w'$ に条件を課す」よりも量化が素直で，証明が破綻しにくい。）}
+        \end{theoremenumerate}
+        
+        以下の二つの命題は同値である：
+        \begin{theoremenumerate}[label=(\roman*), leftmargin=4em, topsep=2pt, partopsep=0pt, itemsep=0pt, parsep=0pt]
+            \item \textbf{（共点）} ある点 $p'\in P$ が存在して，
+            \[
+                \forall i\in\iota,\quad p'\in \mathrm{line}\bigl(p(i),\,q_i\bigr)
+            \]
+            が成り立つ（すなわち，$n+1$ 本のチェビアンは共点である）。
+            \item \textbf{（体積比による等式条件）}
+            \[
+                \det(B)=0
+            \]
+            が成り立つ。
+        \end{theoremenumerate}
+    \end{theorem}
+
+    \begin{proof}
+        まず (i)$\Rightarrow$(ii) を示す．
+        (i) を仮定する．すなわち，ある $p'\in P$ が存在して
+        \[
+          \forall i\in\iota,\quad p' \in \mathrm{line}\bigl(p(i),q_i\bigr)
+        \]
+        が成り立つ．各 $i$ について直線の定義より（(A1)(A2)(A3) を用いる），ある $t_i\in k$ が存在して
+        \[
+          p'=(1-t_i)p(i)+t_i q_i
+        \]
+        と書ける．
+        
+        つぎに (A6)(A7) より，$q_i\in\Delta_i$ であることから $q_i$ は facet の頂点に関するアフィン結合として
+        \[
+          q_i=\sum_{j\in\iota} a_{ij}\,p(j),\qquad \sum_{j\in\iota}a_{ij}=1,\qquad a_{ii}=0
+        \]
+        と書ける（ここで $a_{ii}=0$ は「$q_i$ が $p(i)$ を含まない facet 上にある」ことの言い換え）．
+        これを上式に代入して
+        \[
+          p'=(1-t_i)p(i)+t_i\sum_{j\in\iota}a_{ij}p(j)
+        \]
+        を得る．右辺を $p(j)$ の係数でまとめると
+        \[
+          p'=\sum_{j\in\iota} c_i(j)\,p(j)
+        \]
+        ただし
+        \[
+          c_i(j):=
+          \begin{cases}
+            1-t_i & (j=i),\\
+            t_i a_{ij} & (j\neq i)
+          \end{cases}
+        \]
+        である．(A7) より $\sum_j a_{ij}=1$ なので
+        \[
+          \sum_{j\in\iota}c_i(j)=(1-t_i)+t_i\sum_{j\in\iota}a_{ij}=1
+        \]
+        が成り立ち，従ってこれは確かにアフィン結合である．
+        
+        一方，(A4) より $p:\iota\to P$ はアフィン独立なので，有限集合上で
+        \[
+          \sum_{j}u(j)=1,\quad \sum_{j}u(j)p(j)=p'
+        \]
+        を満たす係数 $u$ は一意である．従って，任意の $i,i'\in\iota$ について
+        \[
+          \forall j\in\iota,\quad c_i(j)=c_{i'}(j)
+        \]
+        が従う．ここで $c_i(i)=1-t_i$ と $c_{i'}(i)=t_{i'}a_{i'i}$（$i\neq i'$）を比べると，
+        \[
+          1-t_i=t_{i'}a_{i'i}
+        \]
+        同様に $c_i(i')=t_i a_{ii'}$ と $c_{i'}(i')=1-t_{i'}$ より
+        \[
+          t_i a_{ii'}=1-t_{i'}
+        \]
+        が得られる．これらを全ての $i$ についてまとめるため，$x:\iota\to k$ を
+        \[
+          x(i):=t_i
+        \]
+        と定める．すると上の関係は
+        \[
+          1-x(i)=x(j)a_{ji}\qquad (i\neq j)
+        \]
+        という形で書ける．さらに $c_i(j)=c_{i'}(j)$ を $j$ 全体で用いると，成分ごとに
+        \[
+          -x(i)+\sum_{j\neq i}a_{ij}x(j)=0
+        \]
+        が導かれる（具体的には，$c_i(i)=1-x(i)$ と $c_i(j)=x(i)a_{ij}$（$j\neq i$）を用い，
+        係数の一意性から得られる等式を整理する）．
+        従って
+        \[
+          Bx=0
+        \]
+        が成り立つ．ここで $x\neq 0$ であることは，もし全ての $t_i=0$ なら $p'=p(i)$ が全ての $i$ で同時に成り立ち，
+        $A4$（アフィン独立）に反することから従う．
+        よって $Bx=0$ の非自明解が存在し，(A1) より体上なので
+        \[
+          \det(B)=0
+        \]
+        が従う．これで (i)$\Rightarrow$(ii) が示された．
+        
+        つぎに (ii)$\Rightarrow$(i) を示す．(ii) を仮定する，すなわち $\det(B)=0$ とする．
+        (A1) より $k$ は体なので，線形代数の基本事実から
+        \[
+          \exists x:\iota\to k,\quad x\neq 0,\quad Bx=0
+        \]
+        が従う．さらに (A9) より，そのような $x$ のうち
+        \[
+          \sum_{j\in\iota}x(j)\neq 0
+        \]
+        を満たすものを取れる．そこで
+        \[
+          w'(j):=\frac{x(j)}{\sum_{\ell\in\iota}x(\ell)}
+        \]
+        と定めると，(A1) より割り算ができ，
+        \[
+          \sum_{j\in\iota}w'(j)=1
+        \]
+        が成り立つ．(A2)(A3) よりアフィン結合が定義できるので
+        \[
+          p':=\sum_{j\in\iota} w'(j)\,p(j)
+        \]
+        と置く．
+        
+        各 $i\in\iota$ を固定し，直線上条件を示すために $t_i:=x(i)$（あるいは $t_i:=w'(i)$ としてスケールを吸収してもよい）と置く．
+        $Bx=0$ の $i$ 成分は
+        \[
+          -x(i)+\sum_{j\neq i}a_{ij}x(j)=0
+        \]
+        であるから，これを $x(i)$ を用いて整理すると
+        \[
+          \sum_{j\neq i}a_{ij}x(j)=x(i)
+        \]
+        を得る．両辺を $\sum_{\ell}x(\ell)$ で割れば
+        \[
+          \sum_{j\neq i}a_{ij}w'(j)=w'(i)
+        \]
+        が従う（(A1) 使用）．
+        
+        ここで点
+        \[
+          r_i:=(1-w'(i))p(i)+\sum_{j\neq i}w'(j)p(j)
+        \]
+        を考える．$r_i$ における係数の和は
+        \[
+          (1-w'(i))+\sum_{j\neq i}w'(j)=1
+        \]
+        なのでアフィン結合である．一方，(A7) より $q_i=\sum_{j\neq i}a_{ij}p(j)$ であり，
+        \[
+          (1-w'(i))p(i)+w'(i)q_i
+          =(1-w'(i))p(i)+w'(i)\sum_{j\neq i}a_{ij}p(j)
+        \]
+        である．右辺の $p(j)$ の係数は $j\neq i$ について $w'(i)a_{ij}$ であるが，
+        先の等式 $\sum_{j\neq i}a_{ij}w'(j)=w'(i)$ と係数一意性（(A4)）を用いて，
+        \[
+          \sum_{j\neq i}w'(j)p(j)=w'(i)\sum_{j\neq i}a_{ij}p(j)
+        \]
+        が従い，よって
+        \[
+          r_i=(1-w'(i))p(i)+w'(i)q_i
+        \]
+        となる．従って
+        \[
+          p'=\sum_{j}w'(j)p(j)=(1-w'(i))p(i)+w'(i)q_i
+        \]
+        が成り立ち，よって $p'\in \mathrm{line}(p(i),q_i)$ である（直線のパラメータ表示に (A1)(A2)(A3)）．
+        $i$ は任意であったから
+        \[
+          \forall i\in\iota,\quad p'\in \mathrm{line}(p(i),q_i)
+        \]
+        が成り立つ．すなわち (i) が従う．
+        
+        以上により (i) と (ii) は同値である．
+    \end{proof}
+        
+    \begin{body}
+        \indent 順方向についてはすでに形式化されているので、これに沿った形で逆方向および必要十分条件の形式化を行う。\\
+    \end{body}
+
+    \section{追加モジュールの実装}
+    \subsection{概念と型クラスとの対応}
+    \begin{body}
+      \indent これまで使用してきた数学的概念、補題のいくつかはすでに宣言としてmathlib4上で実装されている。
+      \begin{bodyitemize}
+        \item[アフィン空間] AddTorsor V P (AffineSpace V P)
+        % 幾何っぽい名前にするために中身は同じで別の名前で宣言されている
+        \item[アフィン独立] AffineIndependent k p
+        \item[アフィン結合] Finset.affineCombination k s p w
+        \item[重心座標] AffineBasis.coord
+        \item[アフィン包] affineSpan k (s : Set P)
+        \item[凸包] % TODO
+        \item[単体] Affine.Simplex k P n
+        \item[面] Affine.Simplex.face
+        \item[対向面] Affine.Simplex.faceOpposite
+      \end{bodyitemize}
+
+      \indent 上記のモジュールを使いながら、不足しているものを適宜追加し実装を進める。
+    \end{body}
+
+    \subsection{追加するモジュール}
+    \subsubsection{逆方向}
+
+    \subsubsection{必要十分形}
+
+    \subsection{実装の工夫事項・特記事項}
+    \begin{bodydescription}
+        \item %TODO
+    \end{bodydescription}
+
+    % =========================================================
+    \chapter{結論と今後の展望}
+    % =========================================================
+
+    \section{結論}
+    \begin{body}
+        \indent チェバの定理の$n$次元の一般化を「各頂点に対向する$(n-1)$-面またはその延長上の点を結ぶ$1$次元チェビアンが共点する条件」として定式化。
+        既にJoseph Myers氏によって形式化された順方向のチェバの定理に加えて、逆方向のチェバの定理を形式化し、mathlib4 4にPRを提出した。
+    \end{body}
+
+    \section{応用例}
+    \subsection{メネラウスの定理}
+
+    \section{今後の課題}
+    \begin{body}
+        \indent コミュニケーション不足によりチェバの定理の順方向の形式化については、Joseph Myers氏に先行されてしまった。\\
+        \indent 今回培ったOSS開発の作法に従い、次回以降のプロジェクトに取り組んでいきたい。\\
+    \end{body}
+
+    \section{Lean4 普及と形式化研究の展望}
+    \begin{body}
+        \indent 現在LeanのAutoformalizationという技術開発が進んでおり、自然言語で記述した数学の証明をそのままLeanの形式言語に書き換えることが目指されている。\\
+        今回は個別の定理を形式化すると言うプロジェクトであったが、この技術を用いればある数学的な証明を自然言語で記述するだけで、立ちどころに形式証明が得られると考えられている。
+        この技術は、Lean研究を飛躍的に促進すると考えられる。個別の定理の形式化だけでなく、このAutoformalizationに関する見識も深めていきたい。
+    \end{body}
+
+    % =========================================================
+    \appendix
+    % =========================================================
+
+    % =========================================================
+    % 付録：チェバの定理のアフィン性
+    % =========================================================
+    \chapter{型理論についての補足}
+
+    \section{型理論の概要}
+    
+
+    \begin{body}
+      \indent 型理論には複数の版が存在し、型や項などの根本的概念であってもそれぞれ定義が微妙に異なる。
+
+      \indent 以下では特に、Lean4の土台となっている型理論の版CICの基本的な概念を説明し、本稿の内容を理解する上での補足を提供する。
+
+        \indent 理論とは言語・公理・推論規則の3つ組で一意に決定されるものであり、型理論もまた同様にこの3つ組の種類によって様々な種類が存在する。(ただしこの3つ組の粒度では型理論の版の違いがわかりにくくなるため、型理論分類に別の観点を用意した方が見通しが良い)
+        またZFとZFCの違いのような大きな違いではなく、さらに細かい観点の違いで異なる理論となるため、名前が付けられていない理論も数多く存在する。
+
+        \indent この理論を用いるメリットの一つとしては、命題が型として表現されオブジェクト理論内に組み込まれているため、命題そのものを数学的対象として扱いたいときにメタ理論を持ち出しゲーデル符号化のような手法を使わずに済む場合があるという点が挙げられる。
+        集合論に匹敵する基礎づけ理論の一つとして注目されている。
+
+    \end{body}
+    \section{概念の定義}
+    \begin{definition}[型]
+        式（記号列）$A$ が文脈 $\Gamma$ のもとで型であるとは、型理論 $T$ の推論規則により
+        \[
+            \Gamma \vdash A \text{ type}
+        \]
+        が導出できることをいう。
+    \end{definition}
+
+    \begin{remark}[型の意味]
+        型は上記のように構文論的に定義される。しかしこれでは型のイメージが掴みにくい。非公式に言えば、型は集合論における集合のような「何らかの性質を満たす項の集まり」である。厳密にはこの説明は不完全であるが、本稿の内容を理解する上ではこの程度で十分。
+    \end{remark}
+
+    \begin{definition}[項]
+        式（記号列）$t$ が文脈 $\Gamma$ のもとで項であるとは、型理論 $T$ の推論規則により
+        \[
+            \Gamma \vdash t : A
+        \]
+        が導出できることをいう。
+    \end{definition}
+
+    \begin{definition}[型クラス]
+        式（記号列）$C$ が文脈 $\Gamma$ のもとで型クラスであるとは、
+        \[
+            \Gamma \vdash C\ \text{type}
+        \]
+        が導出でき、かつ理論 $T$（より正確にはその環境・宣言集合）において $C$ が \emph{型クラスとして宣言されている}ことをいう。
+        また、$t$ が $C$ の\emph{インスタンス}であるとは
+        \[
+            \Gamma \vdash t : C
+        \]
+        が導出できることをいう。
+    \end{definition}
+
+    \begin{remark}[型クラスの意味]
+        型クラスも型と同様に構文論的に定義されるが、型クラスには追加の運用規約がある。
+        非公式に言えば、型クラスは「ある構造（例：群・環・順序など）を持つ」という性質を \emph{暗黙引数として受け渡し}できるようにした型であり、その証拠（インスタンス）$t:C$ を システムが自動探索（型クラス解決）によって補うための仕組みである。
+        注意として、型クラスは「性質そのもの」ではなく、あくまで「性質（構造）のデータ／証拠を表す型」 である。たとえば \texttt{Group G} は「$G$ が群である」という命題というより、 $G$ 上の群構造（演算・公理の証拠を含むデータ）を束ねたものを表す型として実装されることが多い。
+    \end{remark}
+
+    \subsection{インスタンス}
+    \begin{definition}[インスタンス]
+        文脈 $\Gamma$ と型クラス $C$ を固定する。
+        項 $t$ が $C$ の（型クラスとしての）\emph{インスタンス}であるとは、
+        型理論 $T$ の推論規則により
+        \[
+            \Gamma \vdash t : C
+        \]
+        が導出できることをいう。
+    \end{definition}
+
+    \begin{remark}[インスタンスの意味]
+        非公式に言えば、インスタンスとは「その型クラスが表す構造（あるいは性質）の具体的な証拠（データ）」である。
+        たとえば「整数 $\mathbb{Z}$ は加法群である」という事実は、Leanでは
+        \[
+            \vdash \texttt{AddGroup}\ \mathbb{Z}\ \text{type},\qquad \vdash t : \texttt{AddGroup}\ \mathbb{Z}
+        \]
+        を満たす項 $t$（群演算や公理の証拠を束ねたデータ）の存在として表現される。
+        また Lean では、型クラス引数に印を付けることで（例：\texttt{[AddGroup Z]}）、 必要な場面でインスタンス $t:C$ が自動探索（型クラス解決）によって補われる。
+        したがってインスタンスは「証明や定義の入力データ」として暗黙に受け渡され、以後の記述を簡潔にする。
+    \end{remark}
+
+
+    % =========================================================
+    % 付録：チェバの定理のアフィン性
+    % =========================================================
+    \chapter{アフィン空間とチェバの定理のアフィン性}
+
+    \section{目的}
+    \begin{body}
+        \indent 本付録では、平面上のチェバの定理がユークリッド距離や角度に依存せず、 アフィン構造（直線・共線性・共点性・直線上の分点パラメータ）だけで 定式化・証明できることを示す。
+        \indent 方針は次の2段である：
+        \begin{bodyenumerate}
+            \item チェバの条件（有向比の積）と結論（共点性）がアフィン同型で不変であることを示す。
+            \item 非退化三角形を標準三角形へ写して帰着し、標準三角形で一次結合のみを用いて同値を証明する。
+        \end{bodyenumerate}
+    \end{body}
+
+    \section{準備：アフィン同型と分点パラメータ}
+    \subsection{アフィン同型}
+    \begin{body}
+        $\mathbb{R}^2$ 上の写像 $\varphi:\mathbb{R}^2\to\mathbb{R}^2$ が
+        \[
+            \varphi(x)=Ax+b \qquad (A\in GL(2,\mathbb{R}),\ b\in\mathbb{R}^2)
+        \]
+        で表されるとき、$\varphi$ をアフィン同型（可逆アフィン変換）という。
+        アフィン同型は直線を直線に写し、共線性・共点性を保存する。
+    \end{body}
+
+    \subsection{有向比の定義（距離を使わない）}
+    \begin{body}
+        しばしば見かける $\overrightarrow{PQ}/\overrightarrow{QR}$ のような「ベクトルの割り算」は一般には定義されない。
+        そこで直線上の点を分点パラメータで定義し、有向比をそれから作る。
+    \end{body}
+
+    \begin{lemma}[分点パラメータの保存]\label{lem:aff_param}
+        \begin{body}
+            $P,R\in\mathbb{R}^2$ と $t\in\mathbb{R}$ に対し
+            \[
+                Q=(1-t)P+tR
+            \]
+            とおく。このとき任意のアフィン写像 $\varphi$ について
+            \[
+                \varphi(Q)=(1-t)\varphi(P)+t\varphi(R)
+            \]
+            が成り立つ。
+        \end{body}
+    \end{lemma}
+    \begin{proof}
+        \begin{body}
+            $\varphi(x)=Ax+b$ とすると
+            \[
+                \varphi((1-t)P+tR)=A((1-t)P+tR)+b=(1-t)(AP+b)+t(AR+b) =(1-t)\varphi(P)+t\varphi(R).
+            \]
+        \end{body}
+    \end{proof}
+
+    \begin{definition}[有向比]\label{def:dir_ratio}
+        \begin{body}
+            $P\neq R$ を結ぶ直線上の点 $Q=(1-t)P+tR$ に対し（$t\neq 1$）、
+            有向比を
+            \[
+                \frac{PQ}{QR}:=\frac{t}{1-t}
+            \]
+            で定める。
+        \end{body}
+    \end{definition}
+
+    \begin{corollary}[有向比のアフィン不変性]\label{cor:ratio_inv}
+        \begin{body}
+            定義 \ref{def:dir_ratio} による有向比はアフィン同型で不変である。
+        \end{body}
+    \end{corollary}
+    \begin{proof}
+        \begin{body}
+            補題 \ref{lem:aff_param} により分点パラメータ $t$ が保存されるので、 $\frac{t}{1-t}$ も保存される。
+        \end{body}
+    \end{proof}
+
+    \section{チェバの条件・結論はアフィン不変}
+    \begin{lemma}[チェバの条件と結論のアフィン不変性]\label{lem:ceva_inv}
+        \begin{body}
+            三角形 $\triangle ABC$（$A,B,C$ 非共線）と
+            \[
+                D\in BC,\qquad E\in CA,\qquad F\in AB
+            \]
+            をとる（退化を避けるため $D\neq B,C$ などとする）。
+            アフィン同型 $\varphi$ に対し次が成り立つ：
+            \begin{bodyenumerate}
+                \item 共点性：$AD,BE,CF$ が一点で交わる $\Longleftrightarrow$ $\varphi(A)\varphi(D),\varphi(B)\varphi(E),\varphi(C)\varphi(F)$ が一点で交わる。
+                \item 有向比：$\dfrac{BD}{DC}=\dfrac{\varphi(B)\varphi(D)}{\varphi(D)\varphi(C)}$ などが成り立つ。
+            \end{bodyenumerate}
+        \end{body}
+    \end{lemma}
+    \begin{proof}
+        \begin{body}
+            (1) アフィン同型は直線を直線に写すため、交点関係（共点性）を保存する。\\
+            (2) 系 \ref{cor:ratio_inv} による。
+        \end{body}
+    \end{proof}
+    \begin{body}
+        従って、チェバの定理の「条件（有向比の積）」と「結論（共点性）」はいずれもアフィン同型で不変である。
+    \end{body}
+
+    \section{標準三角形への帰着}
+    \begin{body}
+        $A,B,C$ が非共線であるとき、三点はアフィン枠をなす。
+        従って標準三角形
+        \[
+            A_0=(0,0),\quad B_0=(1,0),\quad C_0=(0,1)
+        \]
+        へのアフィン同型 $\varphi$ が存在する（$A\mapsto A_0,B\mapsto B_0,C\mapsto C_0$ を満たす）。
+        補題 \ref{lem:ceva_inv} により、標準三角形でチェバの同値を示せば一般の場合が従う。
+    \end{body}
+
+    \section{標準三角形での証明（一次結合のみ）}
+    \begin{theorem}[チェバの定理（有向比版：標準三角形）]\label{thm:ceva_std}
+        \begin{body}
+            標準三角形 $A_0,B_0,C_0$ に対し
+            \[
+                D=(1-t)B_0+tC_0,\quad E=(1-u)C_0+uA_0,\quad F=(1-v)A_0+vB_0 \qquad (t,u,v\in\mathbb{R},\ t,u,v\neq 0,1)
+            \]
+            とおく。このとき次は同値である：
+            \begin{bodyenumerate}
+                \item 直線 $A_0D,\ B_0E,\ C_0F$ は一点で交わる。
+                \item 有向比の積が $1$：
+                \[
+                    \frac{B_0D}{DC_0}\cdot\frac{C_0E}{EA_0}\cdot\frac{A_0F}{FB_0}=1.
+                \]
+            \end{bodyenumerate}
+        \end{body}
+    \end{theorem}
+    \begin{proof}
+        \begin{body}
+            定義より
+            \[
+                \frac{B_0D}{DC_0}=\frac{t}{1-t},\quad \frac{C_0E}{EA_0}=\frac{u}{1-u},\quad \frac{A_0F}{FB_0}=\frac{v}{1-v}.
+            \]
+            まず $P:=A_0D\cap B_0E$ をとる。
+            $A_0=(0,0)$ より $A_0D$ 上の点は $P=\lambda D$ と書ける。
+            一方 $B_0E$ 上の点は $P=B_0+\mu(E-B_0)$ と書けるので
+            \[
+                \lambda D = B_0+\mu(E-B_0)
+            \]
+            を満たす $\lambda,\mu$ が存在する。成分比較により
+            \[
+                \lambda=\frac{1-u}{1-tu}
+            \]
+            が得られる（$1-tu\neq 0$ は $P$ が無限遠点に飛ばないための退化回避条件）。
+            次に $C_0F$ 上の点は $C_0+\nu(F-C_0)$ と表されるから、
+            $C_0F$ が $P$ を通ることは
+            \[
+                P=C_0+\nu(F-C_0)
+            \]
+            を満たす $\nu$ が存在することと同値である。
+            ここに $P=\lambda D$ と $F=vB_0$ を代入して成分比較すると、
+            $C_0F$ が $P$ を通るための必要十分条件は
+            \[
+                \frac{t}{1-t}\cdot\frac{u}{1-u}\cdot\frac{v}{1-v}=1
+            \]
+            となる。これは(2)と同値である。ゆえに(1)$\Leftrightarrow$(2)が成り立つ。
+        \end{body}
+    \end{proof}
+
+    \section{一般三角形への結論}
+    \begin{body}
+        標準三角形で定理 \ref{thm:ceva_std} が成立し、補題 \ref{lem:ceva_inv} によりその真偽はアフィン同型で不変である。
+        よって任意の非退化三角形 $\triangle ABC$ に対してチェバの定理が成立する。
+        この証明では距離・角度を用いず、アフィン結合（一次結合）と直線・交点・有向比のみを用いた。
+        従ってチェバの定理はアフィン幾何の結果である。
+    \end{body}
+
+
+    
+
+    \backmatter
+    \addchaptertotoc{謝辞}
+    \begin{body}
+        % TODO
+    \end{body}
+
+    \begin{thebibliography}{99}
+      \bibitem{LeanProverCommunity} Lean Prover Community, \emph{Lean Prover Community}, \url{https://leanprover-community.github.io/}, accessed 2026-01-18.
+        \bibitem{DeepMindIMO2025} Google DeepMind, \emph{Advanced version of Gemini with Deep Think officially achieves gold-medal standard at the International Mathematical Olympiad}, 2025.
+        \bibitem{multipede} Dov Samet, \emph{An Extension of Ceva's Theorem ton-Simplices}, 2021.
+        \bibitem{LeanResearch} 秋田 隼, \emph{LeanResearch}, GitHub repository, \url{https://github.com/Aj1905/LeanResearch.git}, 2026.
+        \bibitem{mathlib3_ceva} Mantas Bakšys, \emph{Ceva's Theorem (mathlib3)}, GitHub Pull Request \#10632, \url{https://github.com/leanprover-community/mathlib3/pull/10632}, 2021--2023.
+        \bibitem{mathlib4_ceva_alexeev} Boris Alexeev, \emph{Ceva's Theorem (mathlib4)}, GitHub Pull Request \#33388, \url{https://github.com/leanprover-community/mathlib4/pull/33388}, 2025--2026.
+        \bibitem{mathlib4_ceva_myers} Joseph Myers, \emph{Generalized Ceva's Theorem in $n$-dimensional affine space (mathlib4)}, GitHub Pull Request \#33409, \url{https://github.com/leanprover-community/mathlib4/pull/33409}, 2026.
+    \end{thebibliography}
+
+\end{document}
