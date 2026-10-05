@@ -207,8 +207,6 @@
 \DeclareMathOperator{\Face}{Face}
 \DeclareMathOperator{\Facet}{Facet}
 
-% 修正:いらないコマンドがあるかも
-
 
 % =========================================================
 % Metadata
@@ -229,6 +227,11 @@
 \begin{document}
 
     \maketitle
+
+    \addchaptertotoc{進捗(最終的に消します)}
+    \textbf{必要十分条件を主張する定理として一般化を行いたかったが、どのバージョンの必要十分形が最も汎用的で理想のチェバの定理と言えるのか結論が出ず、また仮に結論が出たとして、おそらく実装が間に合わないことから、ジョセフマイヤーズ氏の定理をそのまま逆にした定理を示し実装することにしました。もし余裕があればさらに一般化を行いたいと思います。}
+    2026/1/22 2.3 Lean4・mathlib4の説明を編集
+    2026/1/30 一般化とは何か、古典的チェバの主張になぜパターンがあるかの説明を補足、定義の整合性や証明部分はまだ未完成です
 
     \frontmatter
     \addchaptertotoc{要旨}
@@ -274,8 +277,6 @@
     \begin{body}
         \indent 第$2$章でLean4について解説し、第$3$章で一般化とは何か基礎論的な視点から眺める。第$4$章でチェバの定理とアフィン幾何の関連を議論し、第$5$章で古典的チェバの定理およびその逆がどのように一般化され得るかを考える。第$6$章で実際に行った実装の詳細を見る。
         \indent 本稿の議論は暗黙に、自然演繹を推論規則として採用した古典一階述語論理体系を用いて行なっている。集合論に言及する時、その概念の定義はKenenに従うものとする。\cite{Kunen}
-
-        % 確認: 章立てあってる？
     \end{body}
 
 
@@ -407,13 +408,14 @@
 
         \indent Lean4における証明記述には大別して2つのモードが存在する。
         
-        \begin{bodyitemize}[leftmargin=1.8em]
-          \item[] \textbf{項モード}\\
-          証明に相当する項をコーディングしながら自分で構成していく。
-          \item[] \textbf{tacticモード}\\
-          あらかじめ定義された tactic と呼ばれるコマンドを利用して、証明すべき命題を変更するなどの操作を行う。
+        \begin{bodyitemize} [leftmargin=1.8em]
+            \item[]
+                \textbf{項モード}\par\noindent
+                証明に相当する項をコーディングしながら自分で構成していく。
+            \item[]
+                \textbf{tacticモード}\par\noindent
+                あらかじめ定義されたtacticと呼ばれるコマンドを利用して、証明すべき命題を変更するなどの操作を行う。
         \end{bodyitemize}
-        
 
         \vskip\baselineskip
 
@@ -482,7 +484,7 @@
             \item \textbf{複数の組合せ}：上記を複数個組み合わせる。
         \end{bodyitemize}
         
-        \indent (3)は「定理の強化」と呼ばれることが多いが、本稿では一般化に含める。一般化と聞くと仮定と結論に着目しがちであるが、定理が依存する前提を緩め（例：体から環へ、可換環から一般の環へ、有限次元から任意次元へ）、対象の主張をより広い土台で成立させることも一般化の重要な形である。
+        \indent (3)は「定理の強化」と呼べれることが多いが、本稿では一般化に含める。一般化と聞くと仮定と結論に着目しがちであるが、定理が依存する前提を緩め（例：体から環へ、可換環から一般の環へ、有限次元から任意次元へ）、対象の主張をより広い土台で成立させることも一般化の重要な形である。
 
     \end{body}
 
@@ -530,7 +532,9 @@
 
         \indent しかし、実際にはこの定理の主張は線分の長さの比（$\dfrac{BD}{DC}$ 等）のみで記述されている。実はこれらの概念は後述するようにユークリッド幾何を用いることなくアフィン幾何という体系内で定義することができる。
 
-        \indent またチェバの定理が必要十分性を主張する定理だと認識していた読者も多いかもしれない。$D,E,F$を辺上に限定する版や、$3$直線が$1$点で交わる必要十分条件を提供する版など、教科書により紹介の仕方に微妙な違いがあり、これらは教育的配慮によるものである。詳細は\hyperref[appendix:classical-ceva-version]{付録}で解説するが、アフィン幾何の範疇では古典的チェバの定理の主張が「共点$⇔$等式条件」というシンプルな形の必要十分条件では表せないためこのような紹介になっているという事にだけ留意してほしい。
+        \indent またチェバの定理が必要十分性を主張する定理だと認識していた読者も多いかもしれない。$D,E,F$を辺上に限定する版や、$3$直線が$1$点で交わる必要十分条件を提供する版など、教科書により紹介の仕方に微妙な違いがあり、これらは教育的配慮によるものである。詳細は\hyperref[appendix:classical-ceva-version]{付録}で解説するが、アフィン幾何の範疇では古典的チェバの定理の主張したい内容が「共点$⇔$等式条件」というシンプルな形の必要十分条件では表せないという事にだけ留意してほしい。
+
+        \indent 以降、アフィン幾何とはどのような体系なのか紹介する。
     \end{body}
 
     \section{概念の定義}
@@ -541,8 +545,6 @@
 
         \indent 以下特に断らない限り、$k$は環、$V$は$k$-加群、$\iota$は有限の添字集合とする。
     \end{body}
-
-    % 修正: 定義同士が繋がりを持つように定義を修正して。また下の証明で使いうる補題があれば紹介して。すでに補題を紹介している部分があるのでそこのフォーマットを参考に。証明はいらない。定義はmathlibに添わなくてもいいので、紙面上の証明において有用なものを採用して。
 
     \begin{definition}[アフィン空間]
         $P$ が $V$ 上の（$k$ に関する）\emph{アフィン空間}であるとは、次の2つの写像が存在し、以下の公理を満たすことをいう：
@@ -570,11 +572,17 @@
         しばしば点族の部分集合を$s\subseteq \iota$を用い、$p$の制限として$p|_s$と表す。
     \end{definition}
 
-    \begin{remark}[注意：点の和・点のスカラー倍は一般に定義されない]
-        上の定義で与えられるのは「点 $p\in P$ に加群の元 $v\in V$ を足す演算 $v\dotplus p$」と「2点 $p,q\in P$ の差から加群の元を作る演算 $q\dotminus p$」である。
-        要は、「点を平行移動させるとまた点である」、「2点の間には対応する平行移動がある」を満たす空間である。
-        アフィン空間とは、非公式には「原点を忘れたベクトル空間」と説明されることが多いが、ベクトル空間の基本的な演算である「$p,q\in P$ の和 $p+q$」や「スカラー倍 $\lambda p$」に相当する演算は、アフィン空間中そのままでは定義されない。
-        しかし以降導入するアフィン結合や重心座標ではスカラー係数を用いるためスカラー倍の概念は必須である。よって純粋なアフィン空間を定義するだけなら$V$は加法群で足りるが、本稿では敢えて$k$-加群であるとして議論を進める。
+    \begin{remark}[注意：点同士の和は一般に定義されない]
+        上の定義で与えられるのは「点 $p\in P$ に加群の元 $v\in V$ を足す演算 $p\dotplus v$」と
+        「2点 $p,q\in P$ の差から加群の元を作る演算 $q\dotminus p$」である。
+        アフィン空間とは、非公式には「原点を忘れたベクトル空間」と説明されることが多い。要は、「点を平行移動させるとまた点である」、「2点の間には対応する平行移動がある」を満たす空間である。
+        ベクトル空間の基本的な演算である「$p,q\in P$ の和 $p+q$」や「スカラー倍 $\lambda p$」に相当する演算は、アフィン空間中そのままでは定義されない。
+    \end{remark}
+
+    \begin{remark}[注意 : $V$に$k$-加群が必要な理由]
+        純粋なアフィン空間を定義するだけなら$V$は加法群で足りる。
+        公理のいずれにもスカラー倍の概念は現れない。
+        しかし以降導入するアフィン結合や重心座標ではスカラー係数を用いるため、$V$が$k$-加群である必要がある。
     \end{remark}
 
     \begin{abbreviation}[加法・減法（アフィン空間）]
@@ -590,25 +598,10 @@
         \[
           \AffComb\bigl(p|_s,\lambda\bigr)
           \;:=\;
-          \sum_{i\in s}\bigl(\lambda(i)\,(p(i)-p(j))\bigr) + p(j)
+          p(j)+\sum_{i\in s}\lambda(i)\,\bigl(p(i)-p(j)\bigr)
         \]
         と定める。
         この表現形式を（点族 $p|_s$ の）\emph{アフィン結合}と呼び，$\lambda$ を\emph{重み}と呼ぶ。
-    \end{definition}
-
-    \begin{definition}[アフィン結合（\texorpdfstring{$\AffComb$}{AffComb}）]
-      $s\subseteq \iota$ を有限集合とし，写像 $\lambda:s\to k$ が
-      \[
-        \sum_{i\in s}\lambda(i)=1
-      \]
-      を満たすとき，任意に $j\in s$ を固定して
-      \[
-        \AffComb\bigl(p|_s,\lambda\bigr)
-        \;:=\;
-        \left(\sum_{i\in s}\lambda(i)\,\bigl(p(i)\dotminus p(j)\bigr)\right)\dotplus p(j)
-      \]
-      と定める。
-      この表現形式を（点族 $p|_s$ の）\emph{アフィン結合}と呼び，$\lambda$ を\emph{重み}と呼ぶ。
     \end{definition}
       
     \begin{remark}[注意：基点 $j$ に依らないことと略記]
@@ -634,7 +627,6 @@
         特に $s=\iota$（$\iota$ が有限である場合）には $\AffHull(p):=\AffHull(p,\iota)$ と略記する。
     \end{definition}
 
-    
     \begin{definition}[アフィン部分空間]
         部分集合 $S\subseteq P$ が（$P$ の）\emph{アフィン部分空間}であるとは，
         $S\neq\emptyset$ であり，任意の有限集合 $t\neq \emptyset$、点族$q:t\to S$、重み $\mu:t\to k$ が
@@ -651,22 +643,12 @@
 
     \begin{definition}[直線]
         アフィン部分空間 $S\subseteq P$ が \emph{直線}であるとは，
-        ある2点 $x,y\in S$ が存在して $x\neq y$ かつ
+        添字集合$t=\{0,1\}$, 点族$q:\iota\to S$に対して
         \[
-          S = \AffHull(q,t)
+        S = \AffHull(q,t)
         \]
-        が成り立つことをいう。
-        ただし $t:=\{0,1\}$ とし，$q:t\to S$ を $q(0)=x,\ q(1)=y$ で定める。
+        が成り立つことを言う。
     \end{definition}
-
-    \begin{remark}[直線上の点のパラメータ表示]
-        点 $A,B\in P$ をとり，$t=\{0,1\}$，点族 $p:\iota \to P$ を
-        $p(0)=A,\ p(1)=B$ とする．
-        直線 $L:=\AffHull(q,t)$ に対し，次が成り立つ：
-        \[
-          L=\{\, (1-\tau)A+\tau B \mid \tau\in k \,\}
-        \]
-    \end{remark}
 
     \begin{definition}[平行]
         アフィン部分空間 $S,T\subseteq P$ に対し、$T$が$S$に \emph{平行}であるとは，
@@ -703,24 +685,45 @@
         を満たす。この $\lambda$ を $q$ の（$p|_s$ に関する）\emph{重心座標}と呼ぶ。
     \end{definition}
 
-    \begin{definition}[単体]
+    \begin{remark}[注意：凸性を扱うには $k$ の順序が必要]
+        以下の「凸包」「単体（凸単体）」では不等式 $\lambda(i)\ge 0$ を用いるため、
+        この段以降では $k$ が順序環であることを仮定する。
+    \end{remark}
+
+    \begin{definition}[凸包]
+        \[
+          \ConvHull(p,s):=
+          \left\{\,
+            \AffComb\bigl(p|_s,\lambda\bigr)
+            \ \middle|\
+            \lambda:s\to k,\ \forall i\in s,\ \lambda(i)\ge 0,\ \sum_{i\in s}\lambda(i)=1
+          \,\right\}
+        \]
+        を 点族$p|_s$ の \emph{凸包}と呼ぶ。
+        特に $s=\iota$ のとき $\ConvHull(p):=\ConvHull(p,\iota)$ と略記する。
+        これは $\AffHull(p)$ の要素の中で非負係数のアフィン結合で表せる点全体である。
+    \end{definition}
+
+    \begin{definition}[単体（凸単体）]
         $p|_s$ がアフィン独立であるとき，
-        $p|_s$ を \emph{$(|s|-1)$-単体}と呼ぶ。
+        $p|_s$ の凸包を \emph{$(|s|-1)$-単体}と呼ぶ。
     \end{definition}
 
     \begin{example}
-        $s$ が $n+1$ 点集合のとき、アフィン独立な$p|_s$を $n$-単体と呼ぶ。
-        特に異なる3点 $A,B,C$ は $2$-単体であり、\emph{三角形 $ABC$} と呼び、$\triangle ABC$ と表す。
+        $s$ が $n+1$ 点集合のとき、アフィン独立な$p|_s$が定める凸包を $n$-単体と呼ぶ。
+        特に異なる3点 $A,B,C$ が定める凸包は $2$-単体であり、\emph{三角形 $ABC$} と呼び、$\triangle ABC$ と表す。
     \end{example}
 
     \begin{remark}
-        一般的な幾何学において単体とは独立な点を結んでできる図形の内部及び境界を意味することが多いが、mathlib中で単体は「アフィン独立な点族」として定義されている。つまり、mathlibにおいて、単体とは単なる点族のことである。
+        mathlib中で単体は、「アフィン独立な点族」として定義されており、本稿の意味での単体は順序を定義した後構成するものとなっている。
     \end{remark}
 
     \begin{definition}[面]
         $S$を$p|_s$が定める$n$-単体とする。\\
         $s_0\subseteq s$に対し、\\
-        点族$p|_{s_0}$ を（$S$の$s_0$が定める）\emph{面}\\
+        点族$p|_{s_0}$のアフィン包を（$S$の$s_0$が定める）\emph{面}\\
+        点族$p|_{s_0}$の凸包を（$S$の$s_0$が定める）\emph{狭義の面}\\
+        と呼ぶ。
         特に $|s_0|=k+1$ のとき、$p|_{s_0}$が定める面を（Sの）\emph{$k$-面}と呼ぶ。
     \end{definition}
 
@@ -743,16 +746,30 @@
         また$x$を\emph{共点}と呼ぶ。
     \end{definition}
 
+    % \begin{definition}[チェビアン / チェビアンの足(古典版)]
+    %     $S$ を $2$-単体とし、$i\in s$ とする。
+    %     頂点 $p(i)$ を通る直線 $S$ が
+    %     \[
+    %     L\cap \AffHull(p,s\setminus\{i\}) \neq \varnothing
+    %     \]
+    %     を満たすとき、この直線 $S$ を（頂点 $p(i)$ に関する）\emph{チェビアン}と呼ぶ。
+    %     また、交点
+    %     \[
+    %     x:=L\cap \AffHull(p,s\setminus\{i\})
+    %     \]
+    %     が一点で定まるとき、その点 $x$ を \emph{チェビアンの足}と呼ぶ。
+    % \end{definition}
+
     % \begin{remark}[一般化について]
     %     $n$-単体（$n\ge3$）では、頂点 $p(i)$ を通り対向面またはその延長と交わる、直線に限らない図形一般をチェビアンと呼ぶ流儀がある。
     %     この時、$n$-単体のチェビアンを特に \emph{$n$-チェビアン}と呼ぶ。
     %     またこの場合対向面またはその延長との交わりが一点とは限らないことに留意してほしい。
     % \end{remark}
 
-    \section{古典的チェバの定理の書き換え}
+    \section{チェバの定理のアフィン性}
 
     \begin{body}
-        \indent 上記の概念を用いて古典的チェバの定理及びその逆を導出関係を明示しながら書き換える。一般化を見据えて冗長な表現になっていることに留意してほしい。
+        \indent 上記の概念を用いて古典的チェバの定理を導出関係を明示しながらアフィン空間の言葉で書き下す。これが正確に古典的チェバの定理の言い換えになっているかどうかは各自確かめて欲しい。
     \end{body}
 
     \begin{theorem}[古典的チェバの定理の言い換え]
@@ -765,73 +782,28 @@
             \item $\iota = \{0,1,2\}$ である。
             \item 点族$p:\iota \to P$ はアフィン独立で、$A:=p(0), B:=p(1), C:=p(2)$と表す。
             \item $s = \iota$          
-            \item 各 $i\in s$ について、有限集合 $F_i:=\iota\setminus\{i\}\subset \iota$ と重み $w_i:F_i\to k$が与えられ、
+            \item 各 $i\in s$ について、有限集合 $F_i:=\iota\setminus\{i\}\subset \iota$ と重み $w_i:\iota\to k$が与えられ、
             \[
             \sum_{j\in F_i} w_i(j)=1
             \]
-            が成立し$t,u,v \in k$に対し、$D:=(1-t)B+tC, E:=(1-u)C+uA, F:=(1-v)A+vB$と表す。
+            が成立し、$D:=(1-t)B+tC, E:=(1-u)C+uA, F:=(1-v)A+vB$と表す。
         \end{theoremenumerate}
         
         \noindent\textbf{仮定：}\par
         \begin{theoremenumerate}[label=(A\arabic*), leftmargin=4em, topsep=2pt, partopsep=0pt, itemsep=0pt, parsep=0pt]
-            \item ある点 $p' \in P$ が存在し、$p'$は直線$AD, BE, CF$上に存在する。
+          \item ある点 $p'$ が存在し、$p'$は直線$AD, BE, CF$上に存在する。
         \end{theoremenumerate}
         
         \noindent\textbf{結論：}\par
         \begin{theoremenumerate}[label=(\roman*), leftmargin=4em, topsep=2pt, partopsep=0pt, itemsep=0pt, parsep=0pt]
-            \item 以下の等式が成立する。
-            \[
-            \left(\frac{t}{1-t}\right)\left(\frac{u}{1-u}\right)\left(\frac{v}{1-v}\right)=1
-            \]
+          \item 以下の等式が成立する：
+          \[
+          \left(\frac{t}{1-t}\right)\left(\frac{u}{1-u}\right)\left(\frac{v}{1-v}\right)=1
+          \]
         \end{theoremenumerate}
     \end{theorem}
 
     \begin{body}
-        \indent この言い換えが適切に古典的チェバの定理の言い換えになっていることを確かめる。
-
-        \indent $k$が可換体なのは等式条件に商が含まれていること、積の順序を変えても成り立つであろうことから明らかである。$P$が$k$-ベクトル空間上のアフィン空間であることは後に示す。$\iota = \{0,1,2\}$ であることは三角形（$3$点からなる点族）を考えていることを意味し、アフィン独立性は$3$頂点が同一直線上となり三角形が潰れてしまうことを防ぐためである。$2$頂点を結ぶ直線の重心座標は一つのパラメータを用いて表せる。
-    \end{body}
-    
-    \begin{theorem}[古典的チェバの定理の逆の言い換え]
-
-        \noindent\textbf{\\前提：}\par
-        \begin{theoremenumerate}[label=(P\arabic*), leftmargin=4em, topsep=2pt, partopsep=0pt, itemsep=0pt, parsep=0pt]
-            \item $k$ は可換体である。
-            \item $V$ は $k$-ベクトル空間である。
-            \item $P$ は $V$ 上のアフィン空間である。
-            \item $\iota = \{0,1,2\}$ である。
-            \item 点族$p:\iota \to P$ はアフィン独立で、$A:=p(0), B:=p(1), C:=p(2)$と表す。
-            \item $s = \iota$          
-            \item 各 $i\in s$ について、有限集合 $F_i:=\iota\setminus\{i\}\subset \iota$ と重み $w_i:F_i\to k$が与えられ、
-            \[
-            \sum_{j\in F_i} w_i(j)=1
-            \]
-            が成立し$t,u,v \in k$に対し、$D:=(1-t)B+tC, E:=(1-u)C+uA, F:=(1-v)A+vB$と表す。
-        \end{theoremenumerate}
-    
-        \noindent\textbf{仮定：}\par
-        \begin{theoremenumerate}[label=(A\arabic*), leftmargin=4em, topsep=2pt, partopsep=0pt, itemsep=0pt, parsep=0pt]
-            \item 係数 $t,u,v$ が
-            \[
-            \left(\frac{t}{1-t}\right)\left(\frac{u}{1-u}\right)\left(\frac{v}{1-v}\right)=1
-            \]
-            を満たす。
-        \end{theoremenumerate}
-    
-        \noindent\textbf{結論：}\par
-        \begin{theoremenumerate}[label=(\roman*), leftmargin=4em, topsep=2pt, partopsep=0pt, itemsep=0pt, parsep=0pt]
-            \item 点$p' \in P$が存在して$p'$ は直線 $AD, BE, CF$ 上に存在する、または直線 $AD, BE, CF$ が互いに平行である。
-        \end{theoremenumerate}
-    \end{theorem}
-
-    \begin{body}
-        \indent 前提条件は順方向と同じである。
-    \end{body}
-
-    \section{チェバの定理とアフィン幾何学}
-        
-    \begin{body}
-        \indent 先ほど紹介したように、この定理の舞台はアフィン空間であり、アフィン幾何学の定理として数えられる。ある定理がアフィン幾何学の定理として主張するには「その定理がアフィン変換で不変な量だけを使って定式化でき、しかも命題の真偽がアフィン変換で保存される」ことを示せば良い。
 
         \indent 上記の定理は全てアフィン空間の概念で記述されており、線分の長さをはじめとしたユークリッド幾何の概念は一切登場しない。辺の長さの比に見えていたものは重心座標で現れる係数の比であり、
         \[
@@ -844,10 +816,6 @@
         \indent この結果は本稿で作成するモジュールをmathlib4のどのディレクトリのファイルに追加するか決定する際に重要となる。一般化を行うときもユークリッド幾何の計量の概念は避けることが必要である。
 
     \end{body}
-
-    \begin{theorem}[古典的チェバの定理のアフィン性]
-        
-    \end{theorem}
 
     % =========================================================
     \chapter{チェバの定理の一般化と選定}
@@ -874,13 +842,11 @@
 
         \indent 実際に一般化したものとして以下のようなものが挙げられる。
 
-
-        % 修正: 上記で定義していない用語をなるべき使わないようにして。どうしても説明に不可欠だが定義がなされていない用語は上の章に定義を加えて
         \begin{bodydescription}
             \item[\hspace*{1.5em}・候補A：周囲空間のみ一般化]
-            $n$-単体の部分集合としての三角形を考え、その各頂点から対向する$1$-面上の点へ下ろす$1$-チェビアンを考える．
-            これらの直線が（$n$点族が張るアフィン包中で）共点（または平行）であることと、古典的チェバと同型の比の積等式が成り立つことの必要十分性を主張する定理．
-            （主張の本質は古典的チェバの定理と同じ）
+            $n$次元アフィン空間に三角形を埋め込み、その各頂点から対向する$1$-面上の点へ下ろす$1$-チェビアンを考える．
+            これらの直線が（$n$次元アフィン空間内で）共点（または平行）であることと、古典的チェバと同型の比の積等式が成り立つことの必要十分性を主張する定理．
+            （本質は古典的チェバの定理と同じで、周囲空間の次元は主張に影響しない．）
             
             \item[\hspace*{1.5em}・候補B：$n$-単体版, 1-チェビアン]
             $n$-単体の各頂点から対向する$(n-1)$-面上の点へ下ろす$1$-チェビアン（直線）を考える．
@@ -950,8 +916,8 @@
             \item (2)を示すための補題
             \item 任意添字点族チェバの定理
             \item 有限添字点族チェバの定理
-            \item 古典的チェバの定理（積等式形）
-            \item 古典的チェバの定理（商等式形）
+            \item $2$-単体についての古典的チェバの定理（積等式形）
+            \item $2$-単体についての古典的チェバの定理（商等式形）
         \end{bodyenumerate}
         \indent 本稿のテーマに近いのは(3)である。
 
@@ -1108,12 +1074,43 @@
     \chapter{Lean4での実装}
     % =========================================================
 
-    % 追加: 全く完成できていない
-
     \section{チェバ型定理逆方向の主張と自然言語証明}
     \begin{body}
-        \indent 古典的チェバの定理の逆の主張は導出関係を明確にすれば以下のような形になる。
+        古典的チェバの定理の逆の主張は導出関係を明確にすれば以下のような形になる。
+    \end{body}
 
+    \begin{theorem}[古典的チェバの定理逆の言い換え]
+        \noindent\textbf{\\前提：}\par
+        \begin{theoremenumerate}[label=(P\arabic*), leftmargin=4em, topsep=2pt, partopsep=0pt, itemsep=0pt, parsep=0pt]
+            \item $k$ は可換体である。
+            \item $V$ は $k$-ベクトル空間である。
+            \item $P$ は $V$ 上のアフィン空間である。
+            \item $\iota = \{0,1,2\}$ である。
+            \item 点族$p:\iota \to P$ はアフィン独立で、$A:=p(0), B:=p(1), C:=p(2)$と表す。
+            \item $s = \iota$          
+            \item 各 $i\in s$ について、有限集合 $F_i:=\iota\setminus\{i\}\subset \iota$ と重み $w_i:\iota\to k$が与えられ、
+            \[
+            \sum_{j\in F_i} w_i(j)=1
+            \]
+            が成立し、$D:=(1-t)B+tC, E:=(1-u)C+uA, F:=(1-v)A+vB$と表す。
+        \end{theoremenumerate}
+      
+        \noindent\textbf{仮定：}\par
+        \begin{theoremenumerate}[label=(A\arabic*), leftmargin=4em, topsep=2pt, partopsep=0pt, itemsep=0pt, parsep=0pt]
+            \item 係数 $t,u,v$ が
+            \[
+            \left(\frac{t}{1-t}\right)\left(\frac{u}{1-u}\right)\left(\frac{v}{1-v}\right)=1
+            \]
+            を満たす。
+        \end{theoremenumerate}
+      
+        \noindent\textbf{結論：}\par
+        \begin{theoremenumerate}[label=(\roman*), leftmargin=4em, topsep=2pt, partopsep=0pt, itemsep=0pt, parsep=0pt]
+            \item 点$p'$が存在して
+        \end{theoremenumerate}
+    \end{theorem}
+
+    \begin{body}
         \indent この主張を元に、順方向同様一般化を行う。
     \end{body}
     
@@ -1209,8 +1206,6 @@
         % \indent 基本的に構成は同じであり、
 
     \end{body}
-
-    % 追加: 上の証明で使った道具のmathlibとの対応を確認して追加して
 
     \section{追加モジュールの実装}
     \subsection{概念と既存との対応}
@@ -1319,8 +1314,6 @@
         \indent こう書くと、自然に「では言語、公理、推論規則のいずれかを変更したらどうなるだろう？」という疑問が自然に湧いてくるであろう。公理的集合論では主にこの公理の部分を様々に入れ替え、付け加え、除くことで理論体系がどう変化するかを分析する。また、推論規則としてはヒルベルト式やシーケント計算が存在し定理の証明のしやすさに影響を与える。
 
         \indent 同様にしてこの三つ組を変更して得られるのが、型理論である。（正確にいうと、上記の三つ組は一階述語論理ベースの形式体系を分類するには有要だが、型理論ベースの形式体系を分類するには不向きである。その上で敢えて同じ視点でCICを眺めてみる。）
-
-        % 追加: 文脈に沿って型理論の説明を追記してできれば上記で使ったレベルの単語で説明をしてほしい。どうしても説明に必要な単語ならむしろ積極的に使って。
 
         \textbf{ここからほぼAIです}
         \vskip\baselineskip
@@ -1471,11 +1464,7 @@
     \backmatter
     \addchaptertotoc{謝辞}
     \begin{body}
-        \indent 本研究を進めるにあたり、終始丁寧なご指導とご助言を賜りました薄葉季路教授に心より感謝申し上げます。研究の方向性に迷った際にも温かく見守りながら的確な示唆をくださり、本研究を完成させることができました。
-
-        \indent また、Lean4およびmathlib4のコミュニティの皆様には、PRのレビューや議論を通じて多くの学びをいただきました。特にJoseph Myers氏には、一般化チェバの定理の形式化に関する先行的な取り組みを通じて大きな刺激を受けました。
-
-        \indent 最後に、日頃より支えてくださった家族と友人に感謝いたします。
+        % TODO
     \end{body}
 
     \begin{thebibliography}{99}

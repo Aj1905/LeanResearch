@@ -2,8 +2,8 @@
 # 使用方法: make または make pdf
 
 BUILD_DIR = build
-TEX_FILE  = graduation_paper.tex
-PDF_FILE  = graduation_paper.pdf
+TEX_FILE  = graduation_paper_completed.tex
+PDF_FILE  = graduation_paper_completed.pdf
 
 .PHONY: all pdf clean help $(BUILD_DIR)
 
