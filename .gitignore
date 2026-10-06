@@ -1,10 +1,7 @@
-# API Keys and Secrets
-.env
-.env.local
-*.key
-config.json
-secrets.json
+# .gitignore — 3 節構成 (再現可能 / 秘密情報 / 端末固有)。ここに書いたものは端末間で同期されない。
+# 大きいファイルは除外しない。data/ に置き、必要になった時点で `git lfs track "data/**"` で追跡する。
 
+# ---- 1. 再現可能: コマンドで作り直せるもの。再現手順は README に書く ----
 # Build files
 build/
 *.aux
@@ -18,7 +15,6 @@ build/
 *.synctex.gz
 *.dvi
 *.out.ps
-
 # Python
 __pycache__/
 *.py[cod]
@@ -27,16 +23,27 @@ __pycache__/
 .Python
 env/
 ENV/
-.venv_activate.sh
 
+# ---- 2. 秘密情報: git に入れない。値は 1Password に置き、参照だけ .env.tpl に書く ----
+.env
+.env.*
+!.env.tpl
+!.env.example
+!.env.*.example
+*.key
+config.json
+secrets.json
+
+# ---- 3. 端末固有: OS・エディタが作る付随ファイル ----
+# OS
+# 注: .DS_Store は既に追跡されている。外すには `git rm --cached .DS_Store`
+.DS_Store
+Thumbs.db
 # IDE
 .vscode/
 .idea/
 *.swp
 *.swo
 *~
-
-# OS
-.DS_Store
-Thumbs.db
-
+# この端末の仮想環境を有効化する補助スクリプト
+.venv_activate.sh

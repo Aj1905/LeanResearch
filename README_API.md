@@ -31,16 +31,18 @@ pip3 install --user --break-system-packages -r requirements.txt
 
 ### 3. APIキーの設定
 
-セットアップスクリプトを実行して`.env`ファイルを作成します：
+鍵は 1Password の `op://dev/LeanResearch/ARISTOTLE_API_KEY` に置き、リポジトリには参照だけを書いた `.env.tpl` を入れてあります。セットアップスクリプトがそれを解決して `.env` を作ります：
 
 ```bash
-./setup_api.sh
+./setup_api.sh        # 中身は op inject -i .env.tpl -o .env
 ```
 
-必要に応じて、環境変数としても設定できます：
+鍵をまだ 1Password に入れていない端末が 1 台だけなら、その端末で `env-to-op LeanResearch` を一度実行して登録します。鍵の値を README やスクリプトに書かないでください (2026-10-06 以前の版には書かれていたため、その鍵は失効させる必要があります)。
+
+必要に応じて、環境変数として直接渡すこともできます：
 
 ```bash
-export ARISTOTLE_API_KEY=arstl_BbL7ymjn_Sl8Wx4Eey3QCT4bGLrawbIZyeTG5cEQ-Z8
+export ARISTOTLE_API_KEY="$(op read op://dev/LeanResearch/ARISTOTLE_API_KEY)"
 ```
 
 ## 使用方法
